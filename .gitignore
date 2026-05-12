@@ -1,0 +1,58 @@
+# ─── Variables de entorno ────────────────────────────────────────────────────
+.env
+.env.*
+*.env
+
+# ─── Dependencias ────────────────────────────────────────────────────────────
+node_modules/
+
+# ─── Next.js ─────────────────────────────────────────────────────────────────
+.next/
+out/
+next-env.d.ts
+
+# ─── TypeScript ──────────────────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Turbopack / Caché ───────────────────────────────────────────────────────
+.turbo/
+.cache/
+
+# ─── Vercel ──────────────────────────────────────────────────────────────────
+.vercel/
+
+# ─── Prisma ──────────────────────────────────────────────────────────────────
+# El schema y las migrations SÍ se suben
+# El cliente generado va a node_modules (ya ignorado)
+prisma/generated/
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+coverage/
+*.lcov
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── macOS ───────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# ─── Editor ──────────────────────────────────────────────────────────────────
+# .vscode/ se ignora salvo settings y extensiones recomendadas
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini

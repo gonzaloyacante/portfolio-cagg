@@ -1,0 +1,28 @@
+name: Security Vulnerability
+description: Report a security vulnerability privately
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **Do not include sensitive exploit details in this public issue.**
+        For critical vulnerabilities, contact the author directly via [GitHub](https://github.com/gonzaloyacante).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the vulnerability?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential impact
+    validations:
+      required: true
