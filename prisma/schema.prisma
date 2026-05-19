@@ -1,14 +1,266 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  directUrl = env("DIRECT_DATABASE_URL")
+  provider = "postgresql"
+}
+
+// === Auth (Better Auth genera estas tablas) ===
+
+model User {
+  id             String          @id
+  name           String
+  email          String          @unique
+  emailVerified  Boolean         @default(false)
+  image          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sessions       Session[]
+  accounts       Account[]
+  totpCredential TotpCredential?
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+model TotpCredential {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secret    String   @db.Text
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// === Contenido bilingüe ===
+
+model Hero {
+  id            String     @id @default(cuid())
+  overlineEs    String
+  overlineEn    String
+  name          String
+  headlineEs    String
+  headlineEn    String
+  summaryEs     String     @db.Text
+  summaryEn     String     @db.Text
+  ctaWhatsappEs String     @default("WhatsApp")
+  ctaWhatsappEn String     @default("WhatsApp")
+  ctaEmailEs    String     @default("Escribir Email")
+  ctaEmailEn    String     @default("Send Email")
+  ctaLinkedinEs String     @default("LinkedIn")
+  ctaLinkedinEn String     @default("LinkedIn")
+  stats         HeroStat[]
+  updatedAt     DateTime   @updatedAt
+}
+
+model HeroStat {
+  id      String @id @default(cuid())
+  heroId  String
+  hero    Hero   @relation(fields: [heroId], references: [id], onDelete: Cascade)
+  value   String
+  labelEs String
+  labelEn String
+  order   Int    @default(0)
+}
+
+model ExperienceCard {
+  id      String @id @default(cuid())
+  code    String @unique
+  titleEs String
+  titleEn String
+  bodyEs  String @db.Text
+  bodyEn  String @db.Text
+  order   Int    @default(0)
+}
+
+model ProcessStep {
+  id            String @id @default(cuid())
+  code          String @unique
+  titleEs       String
+  titleEn       String
+  bodyEs        String @db.Text
+  bodyEn        String @db.Text
+  deliverableEs String
+  deliverableEn String
+  order         Int    @default(0)
+}
+
+model Service {
+  id      String @id @default(cuid())
+  labelEs String
+  labelEn String
+  order   Int    @default(0)
+}
+
+model Project {
+  id             String @id @default(cuid())
+  tag            String
+  periodEs       String
+  periodEn       String
+  titleEs        String
+  titleEn        String
+  challengeEs    String @db.Text
+  challengeEn    String @db.Text
+  interventionEs String @db.Text
+  interventionEn String @db.Text
+  outcomeEs      String @db.Text
+  outcomeEn      String @db.Text
+  order          Int    @default(0)
+}
+
+model ResultItem {
+  id    String @id @default(cuid())
+  kEs   String
+  kEn   String
+  vEs   String
+  vEn   String
+  order Int    @default(0)
+}
+
+model Testimonial {
+  id       String @id @default(cuid())
+  quoteEs  String @db.Text
+  quoteEn  String @db.Text
+  roleEs   String
+  roleEn   String
+  sectorEs String
+  sectorEn String
+  order    Int    @default(0)
+}
+
+model TimelineItem {
+  id      String @id @default(cuid())
+  period  String
+  titleEs String
+  titleEn String
+  bodyEs  String @db.Text
+  bodyEn  String @db.Text
+  order   Int    @default(0)
+}
+
+model FaqItem {
+  id    String @id @default(cuid())
+  qEs   String
+  qEn   String
+  aEs   String @db.Text
+  aEn   String @db.Text
+  order Int    @default(0)
+}
+
+model Brand {
+  id    String @id @default(cuid())
+  name  String
+  order Int    @default(0)
+}
+
+model ContactInfo {
+  id             String @id @default(cuid())
+  name           String
+  phoneDisplay   String
+  whatsappNumber String
+  email          String
+  linkedinUrl    String
+  linkedinHandle String
+  location       String
+}
+
+model SectionMeta {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  overlineEs String?
+  overlineEn String?
+  titleEs    String?
+  titleEn    String?
+  descEs     String?  @db.Text
+  descEn     String?  @db.Text
+  extra      Json     @default("{}")
+  updatedAt  DateTime @updatedAt
+}
+
+// === Mensajes de contacto ===
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String   @default("")
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// === Media ===
+
+model MediaFile {
+  id        String   @id @default(cuid())
+  publicId  String   @unique
+  url       String
+  secureUrl String
+  format    String
+  width     Int?
+  height    Int?
+  bytes     Int?
+  folder    String   @default("portfolio-cag")
+  createdAt DateTime @default(now())
+}
+
+// === SEO ===
+
+model SeoConfig {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  titleEs   String?
+  titleEn   String?
+  descEs    String?  @db.Text
+  descEn    String?  @db.Text
+  ogImage   String?
+  noIndex   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+// === Configuración del sistema ===
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
 }
