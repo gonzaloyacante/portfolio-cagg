@@ -46,6 +46,13 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  /* Typography — tamaños y trackings específicos del sistema de diseño */
+  --text-overline: 0.6875rem;
+  --text-label: 0.625rem;
+  --tracking-overline: 0.2em;
+  --tracking-label: 0.25em;
+  --tracking-code: 0.5em;
+
   /* z-index scale — todos los elementos posicionados usan estas vars */
   --z-intro: 9999;
   --z-header: 50;
