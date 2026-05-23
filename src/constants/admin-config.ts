@@ -27,3 +27,115 @@ export const ADMIN_NAV: AdminNavItem[] = [
 ];
 
 export const ADMIN_NAV_GROUPS = ['Resumen', 'Contenido', 'Sistema'] as const;
+
+// ─── Collection config ──────────────────────────────────────────────────────
+
+export type SingleFieldDef = {
+  kind: 'single';
+  name: string;
+  label: string;
+  type: 'text' | 'textarea';
+};
+
+export type BilingualFieldDef = {
+  kind: 'bilingual';
+  baseName: string;
+  label: string;
+  type: 'text' | 'textarea';
+};
+
+export type CollectionFieldDef = SingleFieldDef | BilingualFieldDef;
+
+export type CollectionConfig = {
+  label: string;
+  fields: CollectionFieldDef[];
+  summarize: (item: Record<string, unknown>) => string;
+};
+
+const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+
+export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
+  brands: {
+    label: 'Marcas',
+    fields: [{ kind: 'single', name: 'name', label: 'Nombre', type: 'text' }],
+    summarize: (item) => str(item.name),
+  },
+
+  experience: {
+    label: 'Experiencia',
+    fields: [
+      { kind: 'single', name: 'code', label: 'Código', type: 'text' },
+      { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
+      { kind: 'bilingual', baseName: 'body', label: 'Cuerpo', type: 'textarea' },
+    ],
+    summarize: (item) => str(item.titleEs),
+  },
+
+  process: {
+    label: 'Proceso',
+    fields: [
+      { kind: 'single', name: 'code', label: 'Código', type: 'text' },
+      { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
+      { kind: 'bilingual', baseName: 'body', label: 'Descripción', type: 'textarea' },
+      { kind: 'bilingual', baseName: 'deliverable', label: 'Entregable', type: 'text' },
+    ],
+    summarize: (item) => str(item.titleEs),
+  },
+
+  services: {
+    label: 'Servicios',
+    fields: [{ kind: 'bilingual', baseName: 'label', label: 'Etiqueta', type: 'text' }],
+    summarize: (item) => str(item.labelEs),
+  },
+
+  projects: {
+    label: 'Proyectos',
+    fields: [
+      { kind: 'single', name: 'tag', label: 'Tag', type: 'text' },
+      { kind: 'bilingual', baseName: 'period', label: 'Período', type: 'text' },
+      { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
+      { kind: 'bilingual', baseName: 'challenge', label: 'Desafío', type: 'textarea' },
+      { kind: 'bilingual', baseName: 'intervention', label: 'Intervención', type: 'textarea' },
+      { kind: 'bilingual', baseName: 'outcome', label: 'Resultado', type: 'textarea' },
+    ],
+    summarize: (item) => str(item.titleEs),
+  },
+
+  results: {
+    label: 'Resultados',
+    fields: [
+      { kind: 'bilingual', baseName: 'k', label: 'Métrica', type: 'text' },
+      { kind: 'bilingual', baseName: 'v', label: 'Valor', type: 'text' },
+    ],
+    summarize: (item) => `${str(item.kEs)}: ${str(item.vEs)}`,
+  },
+
+  testimonials: {
+    label: 'Testimonios',
+    fields: [
+      { kind: 'bilingual', baseName: 'quote', label: 'Cita', type: 'textarea' },
+      { kind: 'bilingual', baseName: 'role', label: 'Rol', type: 'text' },
+      { kind: 'bilingual', baseName: 'sector', label: 'Sector', type: 'text' },
+    ],
+    summarize: (item) => str(item.roleEs),
+  },
+
+  timeline: {
+    label: 'Trayectoria',
+    fields: [
+      { kind: 'single', name: 'period', label: 'Período', type: 'text' },
+      { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
+      { kind: 'bilingual', baseName: 'body', label: 'Descripción', type: 'textarea' },
+    ],
+    summarize: (item) => `${str(item.period)} — ${str(item.titleEs)}`,
+  },
+
+  faqs: {
+    label: 'FAQ',
+    fields: [
+      { kind: 'bilingual', baseName: 'q', label: 'Pregunta', type: 'text' },
+      { kind: 'bilingual', baseName: 'a', label: 'Respuesta', type: 'textarea' },
+    ],
+    summarize: (item) => str(item.qEs),
+  },
+};
