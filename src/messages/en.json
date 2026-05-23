@@ -45,6 +45,28 @@
     "step_prefix": "STEP",
     "deliverable_label": "Deliverable"
   },
+  "projects": {
+    "overline": "PROJECTS · INTERVENTION CASES",
+    "title": "Representative technical intervention cases",
+    "desc": "Anonymized projects illustrating the type of intervention, technical scope and qualitative outcomes obtained on the plant floor.",
+    "case_prefix": "CASE",
+    "challenge_label": "Challenge",
+    "intervention_label": "Intervention",
+    "outcome_label": "Outcome",
+    "disclaimer": "* Cases anonymized for confidentiality. Detailed metrics available under NDA.",
+    "cta": "Discuss a similar case"
+  },
+  "results": {
+    "overline": "RESULTS & VALUE",
+    "title": "Measurable impact on the plant",
+    "desc": "Every intervention targets one or more hard business indicators: cost, time, quality and availability."
+  },
+  "testimonials": {
+    "overline": "VOICES FROM THE PLANT",
+    "title": "Feedback from those who run the line",
+    "desc": "Anonymized testimonials from plant managers, maintenance leaders and technical directors I've worked with on the shop floor.",
+    "disclaimer": "* Testimonials paraphrased and anonymized for confidentiality. Verifiable references available on request."
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",

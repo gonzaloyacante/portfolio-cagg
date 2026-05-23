@@ -45,6 +45,28 @@
     "step_prefix": "PASO",
     "deliverable_label": "Entregable"
   },
+  "projects": {
+    "overline": "PROYECTOS · CASOS DE INTERVENCIÓN",
+    "title": "Casos representativos de intervención técnica",
+    "desc": "Proyectos anonimizados que ilustran el tipo de intervención, alcance técnico y resultados cualitativos obtenidos en planta.",
+    "case_prefix": "CASO",
+    "challenge_label": "Desafío",
+    "intervention_label": "Intervención",
+    "outcome_label": "Resultado",
+    "disclaimer": "* Casos anonimizados por confidencialidad. Métricas detalladas disponibles bajo NDA.",
+    "cta": "Discutir un caso similar"
+  },
+  "results": {
+    "overline": "RESULTADOS Y VALOR",
+    "title": "Impacto medible en planta",
+    "desc": "Cada intervención apunta a uno o más indicadores duros del negocio: costo, tiempo, calidad y disponibilidad."
+  },
+  "testimonials": {
+    "overline": "VOCES DE PLANTA",
+    "title": "Feedback de quienes operan la línea",
+    "desc": "Testimonios anonimizados de plant managers, jefes de mantenimiento y directores técnicos con quienes he trabajado en planta.",
+    "disclaimer": "* Testimonios parafraseados y anonimizados por confidencialidad. Referencias verificables disponibles bajo solicitud."
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",
