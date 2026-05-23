@@ -41,6 +41,10 @@
     "title": "Marcas industriales con experiencia comprobada",
     "desc": "Operación, mantenimiento, diagnóstico y puesta a punto en líneas y sistemas de los principales fabricantes mundiales."
   },
+  "process": {
+    "step_prefix": "PASO",
+    "deliverable_label": "Entregable"
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",

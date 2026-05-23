@@ -41,6 +41,10 @@
     "title": "Industrial brands with proven hands-on experience",
     "desc": "Operation, maintenance, troubleshooting and commissioning across lines and systems from the world's leading manufacturers."
   },
+  "process": {
+    "step_prefix": "STEP",
+    "deliverable_label": "Deliverable"
+  },
   "hero": {
     "tag_id": "ID · 0001 / CAGG",
     "tag_location": "BUENOS AIRES · AR",
