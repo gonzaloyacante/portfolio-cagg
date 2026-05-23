@@ -17,6 +17,24 @@ type CollectionItemFormProps = {
   onCancel: () => void;
 };
 
+function validate(
+  fields: CollectionFieldDef[],
+  values: Record<string, string>
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const field of fields) {
+    if (field.kind === 'single') {
+      if (!values[field.name]?.trim()) errors[field.name] = 'Obligatorio.';
+    } else {
+      const nameEs = `${field.baseName}Es`;
+      const nameEn = `${field.baseName}En`;
+      if (!values[nameEs]?.trim()) errors[nameEs] = 'Obligatorio.';
+      if (!values[nameEn]?.trim()) errors[nameEn] = 'Obligatorio.';
+    }
+  }
+  return errors;
+}
+
 export function CollectionItemForm({
   fields,
   initial,
@@ -25,64 +43,80 @@ export function CollectionItemForm({
   onCancel,
 }: CollectionItemFormProps) {
   const [values, setValues] = useState<Record<string, string>>(initial);
-  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const set = (name: string, value: string) => setValues((prev) => ({ ...prev, [name]: value }));
+  const set = (name: string, value: string) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setSubmitError(null);
+    const errors = validate(fields, values);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
     const ok = await onSubmit(values);
-    if (!ok) setError('Error al guardar.');
+    if (!ok) setSubmitError('Error al guardar. Revisá los datos e intentá de nuevo.');
   };
+
+  const field_input = (name: string, type: 'text' | 'textarea') => (
+    <div className="space-y-1">
+      {type === 'textarea' ? (
+        <Textarea
+          id={name}
+          rows={3}
+          value={values[name] ?? ''}
+          onChange={(e) => set(name, e.target.value)}
+          aria-invalid={!!fieldErrors[name]}
+          className={fieldErrors[name] ? 'border-destructive' : ''}
+        />
+      ) : (
+        <Input
+          id={name}
+          value={values[name] ?? ''}
+          onChange={(e) => set(name, e.target.value)}
+          aria-invalid={!!fieldErrors[name]}
+          className={fieldErrors[name] ? 'border-destructive' : ''}
+        />
+      )}
+      {fieldErrors[name] && <p className="text-destructive text-xs">{fieldErrors[name]}</p>}
+    </div>
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {fields.map((field) => {
         if (field.kind === 'single') {
-          const InputEl = field.type === 'textarea' ? Textarea : Input;
           return (
             <div key={field.name} className="space-y-1.5">
               <Label htmlFor={field.name}>{field.label}</Label>
-              <InputEl
-                id={field.name}
-                value={values[field.name] ?? ''}
-                onChange={(e) => set(field.name, e.target.value)}
-                rows={field.type === 'textarea' ? 3 : undefined}
-              />
+              {field_input(field.name, field.type)}
             </div>
           );
         }
 
         const nameEs = `${field.baseName}Es`;
         const nameEn = `${field.baseName}En`;
-        const InputEl = field.type === 'textarea' ? Textarea : Input;
 
         return (
           <BilingualField key={field.baseName} label={field.label}>
             <div className="space-y-1.5">
               <Label htmlFor={nameEs}>Español</Label>
-              <InputEl
-                id={nameEs}
-                value={values[nameEs] ?? ''}
-                onChange={(e) => set(nameEs, e.target.value)}
-                rows={field.type === 'textarea' ? 3 : undefined}
-              />
+              {field_input(nameEs, field.type)}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor={nameEn}>English</Label>
-              <InputEl
-                id={nameEn}
-                value={values[nameEn] ?? ''}
-                onChange={(e) => set(nameEn, e.target.value)}
-                rows={field.type === 'textarea' ? 3 : undefined}
-              />
+              {field_input(nameEn, field.type)}
             </div>
           </BilingualField>
         );
       })}
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {submitError && <p className="text-destructive text-sm">{submitError}</p>}
 
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" disabled={saving}>

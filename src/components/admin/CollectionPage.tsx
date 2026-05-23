@@ -128,6 +128,7 @@ export function CollectionPage({ slug, config, initialItems }: CollectionPagePro
           </DialogHeader>
           {dialogState && (
             <CollectionItemForm
+              key={dialogState.mode === 'edit' ? dialogState.item.id : 'new'}
               fields={config.fields}
               initial={buildInitial(
                 config.fields,
