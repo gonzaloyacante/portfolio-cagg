@@ -28,7 +28,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="h-full">
+    <html lang={locale} className="h-full" data-scroll-behavior="smooth">
       <body
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
       >
