@@ -6,11 +6,11 @@ export function useReveal<T extends HTMLElement = HTMLElement>(
   options: Options = {}
 ): [React.RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
-  const [visible, setVisible] = useState(() => typeof IntersectionObserver === 'undefined');
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
