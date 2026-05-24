@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
-import { resend } from '@/lib/resend';
+import { getResend } from '@/lib/resend';
 import { contactMessageSchema } from '@/validations/message';
 
 export async function POST(req: Request) {
@@ -32,7 +32,8 @@ export async function POST(req: Request) {
   const toEmail = byKey.notification_email || process.env.ADMIN_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
 
-  if (notificationsEnabled && toEmail && fromEmail) {
+  const resend = getResend();
+  if (notificationsEnabled && toEmail && fromEmail && resend) {
     await resend.emails
       .send({
         from: fromEmail,

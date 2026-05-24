@@ -8,11 +8,11 @@ import { type ContactInfo } from './ContactDirect';
 
 type FooterProps = {
   contact: ContactInfo;
+  year: number;
 };
 
-export function Footer({ contact }: FooterProps) {
+export function Footer({ contact, year }: FooterProps) {
   const t = useTranslations('footer');
-  const year = new Date().getFullYear();
 
   return (
     <footer data-testid="site-footer" className="border-border bg-background border-t">

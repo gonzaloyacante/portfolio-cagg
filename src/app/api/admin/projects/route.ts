@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
+import { revalidateLanding } from '@/lib/revalidate';
 import { projectSchema } from '@/validations/admin';
 
 export const GET = withAdminAuth(async () => {
@@ -19,5 +20,6 @@ export const POST = withAdminAuth(async (req) => {
     );
   }
   const item = await prisma.project.create({ data: parsed.data });
+  revalidateLanding();
   return NextResponse.json(item, { status: 201 });
 });

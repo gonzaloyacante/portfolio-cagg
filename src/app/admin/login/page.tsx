@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import AuthLayout from '@/components/admin/AuthLayout';
 import LoginForm from '@/components/admin/LoginForm';
 import TotpForm from '@/components/admin/TotpForm';
@@ -6,7 +8,7 @@ interface PageProps {
   searchParams: Promise<{ step?: string }>;
 }
 
-export default async function AdminLoginPage({ searchParams }: PageProps) {
+async function LoginContent({ searchParams }: { searchParams: Promise<{ step?: string }> }) {
   const { step } = await searchParams;
   const is2fa = step === '2fa';
 
@@ -19,5 +21,13 @@ export default async function AdminLoginPage({ searchParams }: PageProps) {
     >
       {is2fa ? <TotpForm /> : <LoginForm />}
     </AuthLayout>
+  );
+}
+
+export default function AdminLoginPage({ searchParams }: PageProps) {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent searchParams={searchParams} />
+    </Suspense>
   );
 }

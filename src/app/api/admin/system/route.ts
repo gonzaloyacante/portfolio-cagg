@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
+import { revalidateLanding } from '@/lib/revalidate';
 
 const updateSchema = z.object({
   acceptingProjects: z.boolean(),
@@ -31,5 +32,6 @@ export const PUT = withAdminAuth(async (req) => {
     create: { key: KEY, value: String(parsed.data.acceptingProjects) },
   });
 
+  revalidateLanding();
   return NextResponse.json({ success: true });
 });

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { unstable_cache } from 'next/cache';
 
 import { BrandsMarquee } from '@/components/landing/BrandsMarquee';
 import { Contact } from '@/components/landing/Contact';
@@ -20,8 +21,6 @@ import { Timeline } from '@/components/landing/Timeline';
 import type { SectionMeta } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
-export const revalidate = 60;
-
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -39,6 +38,8 @@ function pickMeta(metas: SectionMeta[], slug: string, isEn: boolean) {
   };
 }
 
+const FOOTER_YEAR = new Date().getFullYear();
+
 const SECTION_SLUGS = [
   'experience',
   'process',
@@ -51,13 +52,61 @@ const SECTION_SLUGS = [
   'contact',
 ] as const;
 
+const getLandingData = unstable_cache(
+  async () => {
+    const [
+      rawHero,
+      brands,
+      experienceCards,
+      processSteps,
+      services,
+      projects,
+      results,
+      testimonials,
+      timelineItems,
+      faqItems,
+      contactInfo,
+      sectionMetas,
+    ] = await Promise.all([
+      prisma.hero.findFirst({ include: { stats: { orderBy: { order: 'asc' } } } }),
+      prisma.brand.findMany({ orderBy: { order: 'asc' } }),
+      prisma.experienceCard.findMany({ orderBy: { order: 'asc' } }),
+      prisma.processStep.findMany({ orderBy: { order: 'asc' } }),
+      prisma.service.findMany({ orderBy: { order: 'asc' } }),
+      prisma.project.findMany({ orderBy: { order: 'asc' } }),
+      prisma.resultItem.findMany({ orderBy: { order: 'asc' } }),
+      prisma.testimonial.findMany({ orderBy: { order: 'asc' } }),
+      prisma.timelineItem.findMany({ orderBy: { order: 'asc' } }),
+      prisma.faqItem.findMany({ orderBy: { order: 'asc' } }),
+      prisma.contactInfo.findFirst(),
+      prisma.sectionMeta.findMany({ where: { slug: { in: [...SECTION_SLUGS] } } }),
+    ]);
+    return {
+      rawHero,
+      brands,
+      experienceCards,
+      processSteps,
+      services,
+      projects,
+      results,
+      testimonials,
+      timelineItems,
+      faqItems,
+      contactInfo,
+      sectionMetas,
+    };
+  },
+  ['landing'],
+  { tags: ['landing'] }
+);
+
 export default async function LandingPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const isEn = locale === 'en';
 
-  const [
+  const {
     rawHero,
     brands,
     experienceCards,
@@ -70,20 +119,7 @@ export default async function LandingPage({ params }: Props) {
     faqItems,
     contactInfo,
     sectionMetas,
-  ] = await Promise.all([
-    prisma.hero.findFirst({ include: { stats: { orderBy: { order: 'asc' } } } }),
-    prisma.brand.findMany({ orderBy: { order: 'asc' } }),
-    prisma.experienceCard.findMany({ orderBy: { order: 'asc' } }),
-    prisma.processStep.findMany({ orderBy: { order: 'asc' } }),
-    prisma.service.findMany({ orderBy: { order: 'asc' } }),
-    prisma.project.findMany({ orderBy: { order: 'asc' } }),
-    prisma.resultItem.findMany({ orderBy: { order: 'asc' } }),
-    prisma.testimonial.findMany({ orderBy: { order: 'asc' } }),
-    prisma.timelineItem.findMany({ orderBy: { order: 'asc' } }),
-    prisma.faqItem.findMany({ orderBy: { order: 'asc' } }),
-    prisma.contactInfo.findFirst(),
-    prisma.sectionMeta.findMany({ where: { slug: { in: [...SECTION_SLUGS] } } }),
-  ]);
+  } = await getLandingData();
 
   const hero = rawHero
     ? {
@@ -192,7 +228,7 @@ export default async function LandingPage({ params }: Props) {
         <FAQ {...pickMeta(sectionMetas, 'faq', isEn)} items={faqEntries} />
         {contact && <Contact {...pickMeta(sectionMetas, 'contact', isEn)} contact={contact} />}
       </main>
-      {contact && <Footer contact={contact} />}
+      {contact && <Footer contact={contact} year={FOOTER_YEAR} />}
       {contact && <StickyWhatsApp whatsappNumber={contact.whatsappNumber} />}
     </>
   );

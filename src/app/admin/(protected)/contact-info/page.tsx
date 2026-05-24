@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
+import { Suspense } from 'react';
 
 import { ContactInfoForm } from '@/components/admin/ContactInfoForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function ContactInfoPage() {
+async function ContactInfoContent() {
+  await connection();
   const contactInfo = await prisma.contactInfo.findFirst();
 
   if (!contactInfo) notFound();
@@ -28,5 +31,13 @@ export default async function ContactInfoPage() {
       </div>
       <ContactInfoForm initial={initial} />
     </div>
+  );
+}
+
+export default function ContactInfoPage() {
+  return (
+    <Suspense fallback={null}>
+      <ContactInfoContent />
+    </Suspense>
   );
 }

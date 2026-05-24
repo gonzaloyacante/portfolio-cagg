@@ -1,7 +1,11 @@
+import { connection } from 'next/server';
+import { Suspense } from 'react';
+
 import { MessagesTable } from '@/components/admin/MessagesTable';
 import { prisma } from '@/lib/prisma';
 
-export default async function MessagesPage() {
+async function MessagesContent() {
+  await connection();
   const messages = await prisma.contactMessage.findMany({
     orderBy: { createdAt: 'desc' },
     take: 100,
@@ -36,5 +40,13 @@ export default async function MessagesPage() {
       </div>
       <MessagesTable initialMessages={initialMessages} />
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesContent />
+    </Suspense>
   );
 }

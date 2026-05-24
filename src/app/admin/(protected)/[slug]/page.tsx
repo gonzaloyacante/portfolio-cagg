@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { CollectionPage } from '@/components/admin/CollectionPage';
 import { COLLECTION_CONFIG } from '@/constants/admin-config';
@@ -33,12 +34,18 @@ async function fetchItems(slug: string): Promise<CollectionItem[]> {
   }
 }
 
-export default async function CollectionRoute({ params }: Props) {
-  const { slug } = await params;
+async function CollectionContent({ slug }: { slug: string }) {
   const config = COLLECTION_CONFIG[slug];
   if (!config) notFound();
-
   const initialItems = await fetchItems(slug);
-
   return <CollectionPage slug={slug} config={config} initialItems={initialItems} />;
+}
+
+export default async function CollectionRoute({ params }: Props) {
+  const { slug } = await params;
+  return (
+    <Suspense fallback={null}>
+      <CollectionContent slug={slug} />
+    </Suspense>
+  );
 }

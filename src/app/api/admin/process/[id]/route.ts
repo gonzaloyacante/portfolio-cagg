@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
+import { revalidateLanding } from '@/lib/revalidate';
 import { processStepSchema } from '@/validations/admin';
 
 export const PUT = withAdminAuth(async (req, { params }) => {
@@ -16,6 +17,7 @@ export const PUT = withAdminAuth(async (req, { params }) => {
   }
   try {
     const item = await prisma.processStep.update({ where: { id }, data: parsed.data });
+    revalidateLanding();
     return NextResponse.json(item);
   } catch {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -26,6 +28,7 @@ export const DELETE = withAdminAuth(async (_req, { params }) => {
   const { id } = await params;
   try {
     await prisma.processStep.delete({ where: { id } });
+    revalidateLanding();
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

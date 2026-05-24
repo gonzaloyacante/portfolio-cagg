@@ -1,7 +1,11 @@
+import { connection } from 'next/server';
+import { Suspense } from 'react';
+
 import { SystemSettingsForm } from '@/components/admin/SystemSettingsForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function SystemPage() {
+async function SystemContent() {
+  await connection();
   const setting = await prisma.setting.findUnique({ where: { key: 'accepting_projects' } });
 
   const initial = {
@@ -21,5 +25,13 @@ export default async function SystemPage() {
       </div>
       <SystemSettingsForm initial={initial} />
     </div>
+  );
+}
+
+export default function SystemPage() {
+  return (
+    <Suspense fallback={null}>
+      <SystemContent />
+    </Suspense>
   );
 }

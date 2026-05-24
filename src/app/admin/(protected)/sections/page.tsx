@@ -1,7 +1,11 @@
+import { connection } from 'next/server';
+import { Suspense } from 'react';
+
 import { SectionMetaForm } from '@/components/admin/SectionMetaForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function SectionsPage() {
+async function SectionsContent() {
+  await connection();
   const sections = await prisma.sectionMeta.findMany({ orderBy: { slug: 'asc' } });
 
   return (
@@ -34,5 +38,13 @@ export default async function SectionsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function SectionsPage() {
+  return (
+    <Suspense fallback={null}>
+      <SectionsContent />
+    </Suspense>
   );
 }

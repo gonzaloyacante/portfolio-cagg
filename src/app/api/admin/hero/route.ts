@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
+import { revalidateLanding } from '@/lib/revalidate';
 import { heroUpdateSchema } from '@/validations/admin';
 
 export const GET = withAdminAuth(async () => {
@@ -40,5 +41,6 @@ export const PUT = withAdminAuth(async (req) => {
   const updated = await prisma.hero.findFirst({
     include: { stats: { orderBy: { order: 'asc' } } },
   });
+  revalidateLanding();
   return NextResponse.json(updated);
 });

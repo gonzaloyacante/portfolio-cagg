@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -8,7 +9,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export default async function AdminDashboardPage() {
+async function DashboardContent() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect('/admin/login');
 
@@ -30,7 +31,6 @@ export default async function AdminDashboardPage() {
           <h1 className="text-xl font-semibold">Panel de administración</h1>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="border-border bg-card rounded-none border p-6">
             <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
@@ -40,7 +40,6 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Recent messages */}
         <div>
           <h2 className="text-foreground mb-4 text-sm font-semibold">Últimos mensajes</h2>
           {recentMessages.length === 0 ? (
@@ -72,7 +71,11 @@ export default async function AdminDashboardPage() {
                         {msg.email}
                       </td>
                       <td className="text-muted-foreground hidden px-4 py-3 md:table-cell">
-                        {formatDistanceToNow(msg.createdAt, { locale: es, addSuffix: true })}
+                        {formatDistanceToNow(msg.createdAt, {
+                          locale: es,
+                          addSuffix: true,
+                          includeSeconds: false,
+                        })}
                       </td>
                       <td className="px-4 py-3">
                         {msg.read ? (
@@ -92,5 +95,13 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
   );
 }

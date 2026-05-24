@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
+import { Suspense } from 'react';
 
 import { HeroForm } from '@/components/admin/HeroForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function HeroPage() {
+async function HeroContent() {
+  await connection();
   const hero = await prisma.hero.findFirst({
     include: { stats: { orderBy: { order: 'asc' } } },
   });
@@ -42,5 +45,13 @@ export default async function HeroPage() {
       </div>
       <HeroForm initial={initial} />
     </div>
+  );
+}
+
+export default function HeroPage() {
+  return (
+    <Suspense fallback={null}>
+      <HeroContent />
+    </Suspense>
   );
 }

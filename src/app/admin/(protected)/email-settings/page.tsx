@@ -1,7 +1,11 @@
+import { connection } from 'next/server';
+import { Suspense } from 'react';
+
 import { EmailSettingsForm } from '@/components/admin/EmailSettingsForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function EmailSettingsPage() {
+async function EmailSettingsContent() {
+  await connection();
   const settings = await prisma.setting.findMany({
     where: { key: { in: ['notification_email', 'notifications_enabled'] } },
   });
@@ -26,5 +30,13 @@ export default async function EmailSettingsPage() {
       </div>
       <EmailSettingsForm initial={initial} />
     </div>
+  );
+}
+
+export default function EmailSettingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <EmailSettingsContent />
+    </Suspense>
   );
 }
