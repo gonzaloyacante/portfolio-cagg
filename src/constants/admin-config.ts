@@ -50,16 +50,28 @@ export type CollectionFieldDef = SingleFieldDef | BilingualFieldDef;
 export type CollectionConfig = {
   label: string;
   fields: CollectionFieldDef[];
-  summarize: (item: Record<string, unknown>) => string;
 };
 
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+
+export type ItemSummarizer = (item: Record<string, unknown>) => string;
+
+export const SUMMARIZERS: Record<string, ItemSummarizer> = {
+  brands: (item) => str(item.name),
+  experience: (item) => str(item.titleEs),
+  process: (item) => str(item.titleEs),
+  services: (item) => str(item.labelEs),
+  projects: (item) => str(item.titleEs),
+  results: (item) => `${str(item.kEs)}: ${str(item.vEs)}`,
+  testimonials: (item) => str(item.roleEs),
+  timeline: (item) => `${str(item.period)} — ${str(item.titleEs)}`,
+  faqs: (item) => str(item.qEs),
+};
 
 export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
   brands: {
     label: 'Marcas',
     fields: [{ kind: 'single', name: 'name', label: 'Nombre', type: 'text' }],
-    summarize: (item) => str(item.name),
   },
 
   experience: {
@@ -69,7 +81,6 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
       { kind: 'bilingual', baseName: 'body', label: 'Cuerpo', type: 'textarea' },
     ],
-    summarize: (item) => str(item.titleEs),
   },
 
   process: {
@@ -80,13 +91,11 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'body', label: 'Descripción', type: 'textarea' },
       { kind: 'bilingual', baseName: 'deliverable', label: 'Entregable', type: 'text' },
     ],
-    summarize: (item) => str(item.titleEs),
   },
 
   services: {
     label: 'Servicios',
     fields: [{ kind: 'bilingual', baseName: 'label', label: 'Etiqueta', type: 'text' }],
-    summarize: (item) => str(item.labelEs),
   },
 
   projects: {
@@ -99,7 +108,6 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'intervention', label: 'Intervención', type: 'textarea' },
       { kind: 'bilingual', baseName: 'outcome', label: 'Resultado', type: 'textarea' },
     ],
-    summarize: (item) => str(item.titleEs),
   },
 
   results: {
@@ -108,7 +116,6 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'k', label: 'Métrica', type: 'text' },
       { kind: 'bilingual', baseName: 'v', label: 'Valor', type: 'text' },
     ],
-    summarize: (item) => `${str(item.kEs)}: ${str(item.vEs)}`,
   },
 
   testimonials: {
@@ -118,7 +125,6 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'role', label: 'Rol', type: 'text' },
       { kind: 'bilingual', baseName: 'sector', label: 'Sector', type: 'text' },
     ],
-    summarize: (item) => str(item.roleEs),
   },
 
   timeline: {
@@ -128,7 +134,6 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'title', label: 'Título', type: 'text' },
       { kind: 'bilingual', baseName: 'body', label: 'Descripción', type: 'textarea' },
     ],
-    summarize: (item) => `${str(item.period)} — ${str(item.titleEs)}`,
   },
 
   faqs: {
@@ -137,6 +142,5 @@ export const COLLECTION_CONFIG: Record<string, CollectionConfig> = {
       { kind: 'bilingual', baseName: 'q', label: 'Pregunta', type: 'text' },
       { kind: 'bilingual', baseName: 'a', label: 'Respuesta', type: 'textarea' },
     ],
-    summarize: (item) => str(item.qEs),
   },
 };

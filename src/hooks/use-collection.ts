@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import axiosInstance from '@/lib/axios';
 
-export type CollectionItem = Record<string, unknown> & { id: string };
+export type CollectionItem = Record<string, unknown> & { id: string; _summary: string };
 
 export function useCollection(slug: string) {
   const router = useRouter();

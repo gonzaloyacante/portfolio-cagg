@@ -74,7 +74,7 @@ export function CollectionPage({ slug, config, initialItems }: CollectionPagePro
           {initialItems.map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-3">
               <span className="text-foreground min-w-0 flex-1 truncate text-sm">
-                {config.summarize(item)}
+                {item._summary}
               </span>
 
               {confirmDeleteId === item.id ? (
