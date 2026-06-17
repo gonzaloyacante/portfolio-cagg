@@ -74,6 +74,23 @@ export default async function LocaleLayout({
         <meta name="rating" content="general" />
         <meta name="distribution" content="global" />
         <meta name="revisit-after" content="7 days" />
+
+        {/* iOS Smart App Banner (if a native app is published later) */}
+        {/* <meta name="apple-itunes-app" content="app-id=000000000" /> */}
+
+        {/*
+          Facebook App Links — only uncomment if/when native apps
+          ship on iOS / Android so deep links open in the app.
+        */}
+        {/*
+        <meta property="al:ios:url" content="applinks://docs" />
+        <meta property="al:ios:app_store_id" content="000000000" />
+        <meta property="al:ios:app_name" content="CAG Portfolio" />
+        <meta property="al:android:url" content="applinks://docs" />
+        <meta property="al:android:app_name" content="CAG Portfolio" />
+        <meta property="al:android:package" content="dev.carlosguerra.portfolio" />
+        <meta property="al:web:url" content="https://carlosguerra.dev/es" />
+        */}
       </head>
       <body
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
