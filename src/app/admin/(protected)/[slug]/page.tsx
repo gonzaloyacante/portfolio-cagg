@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import { Suspense } from 'react';
 
 import { CollectionPage } from '@/components/admin/CollectionPage';
@@ -35,6 +36,7 @@ async function fetchItems(slug: string): Promise<CollectionItem[]> {
 }
 
 async function CollectionContent({ slug }: { slug: string }) {
+  await connection();
   const config = COLLECTION_CONFIG[slug];
   if (!config) notFound();
   const initialItems = await fetchItems(slug);
