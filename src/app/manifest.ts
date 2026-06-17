@@ -14,6 +14,15 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0a0a0a',
     lang: 'es',
     categories: ['technology', 'productivity', 'business'],
+    screenshots: [
+      {
+        src: '/apple-touch-startup-image',
+        sizes: '1242x2688',
+        type: 'image/png',
+        form_factor: 'narrow',
+        label: 'Carlos A. Guerra — Portfolio',
+      },
+    ],
     icons: [
       {
         src: '/icon/32',

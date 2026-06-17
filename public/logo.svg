@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48">
+  <!--
+    Full wordmark for the brand. Used in PDF résumés, emails, the
+    README, and anywhere a vector monogram + wordmark is needed.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#1a1a2a"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0, 4)">
+    <rect width="40" height="40" rx="8" fill="url(#bg)"/>
+    <text
+      x="20"
+      y="28"
+      font-family="-apple-system, system-ui, sans-serif"
+      font-size="20"
+      font-weight="800"
+      fill="#fafafa"
+      text-anchor="middle"
+      letter-spacing="-1"
+    >CG</text>
+    <text
+      x="52"
+      y="22"
+      font-family="-apple-system, system-ui, sans-serif"
+      font-size="16"
+      font-weight="600"
+      fill="currentColor"
+      letter-spacing="-0.3"
+    >Carlos A. Guerra</text>
+    <text
+      x="52"
+      y="36"
+      font-family="-apple-system, system-ui, sans-serif"
+      font-size="9"
+      font-weight="500"
+      fill="currentColor"
+      opacity="0.6"
+      letter-spacing="3"
+    >INGENIERO · CONTROL INDUSTRIAL</text>
+  </g>
+</svg>
