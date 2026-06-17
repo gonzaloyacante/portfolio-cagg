@@ -1,7 +1,10 @@
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
+import { Inbox } from 'lucide-react';
+
 import { MessagesTable } from '@/components/admin/MessagesTable';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { prisma } from '@/lib/prisma';
 
 async function MessagesContent() {
@@ -24,20 +27,19 @@ async function MessagesContent() {
   const unreadCount = initialMessages.filter((m) => !m.read).length;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
-          Resumen · Mensajes
-        </p>
-        <h1 className="text-foreground text-xl font-semibold">
-          Mensajes
-          {unreadCount > 0 && (
-            <span className="bg-foreground/10 text-foreground ml-3 rounded-none px-2 py-0.5 text-sm font-semibold">
-              {unreadCount} sin leer
-            </span>
-          )}
-        </h1>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrowIcon={<Inbox size={11} />}
+        eyebrow="Resumen · Mensajes"
+        title="Buzón de contacto"
+        description="Mensajes enviados desde el formulario de la landing."
+        meta={
+          <span className="border-border bg-muted/30 text-muted-foreground inline-flex items-center gap-1.5 rounded-[var(--admin-radius)] border px-2.5 py-1 font-mono text-[10px] tracking-[0.18em] uppercase">
+            <span className="admin-status-dot text-emerald-400" />
+            {initialMessages.length} mensajes · {unreadCount} sin leer
+          </span>
+        }
+      />
       <MessagesTable initialMessages={initialMessages} />
     </div>
   );

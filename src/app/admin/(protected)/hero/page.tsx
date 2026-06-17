@@ -2,7 +2,10 @@ import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
+import { Sparkles } from 'lucide-react';
+
 import { HeroForm } from '@/components/admin/HeroForm';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { prisma } from '@/lib/prisma';
 
 async function HeroContent() {
@@ -27,6 +30,7 @@ async function HeroContent() {
     ctaEmailEn: hero.ctaEmailEn,
     ctaLinkedinEs: hero.ctaLinkedinEs,
     ctaLinkedinEn: hero.ctaLinkedinEn,
+    portraitUrl: hero.portraitUrl ?? null,
     stats: hero.stats.map(({ value, labelEs, labelEn, order }) => ({
       value,
       labelEs,
@@ -36,13 +40,15 @@ async function HeroContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
-          Contenido · Hero
-        </p>
-        <h1 className="text-foreground text-xl font-semibold">Hero</h1>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrowIcon={<Sparkles size={11} />}
+        eyebrow="Contenido · Hero"
+        title="Sección principal"
+        description="Lo primero que ve alguien cuando entra a tu sitio. Aparece arriba de todo, antes de hacer scroll."
+        previewUrl="/#top"
+        previewLabel="Ver Hero en vivo"
+      />
       <HeroForm initial={initial} />
     </div>
   );

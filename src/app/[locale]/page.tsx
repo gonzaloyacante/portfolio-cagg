@@ -129,6 +129,7 @@ export default async function LandingPage({ params }: Props) {
         ctaWhatsapp: isEn ? rawHero.ctaWhatsappEn : rawHero.ctaWhatsappEs,
         ctaEmail: isEn ? rawHero.ctaEmailEn : rawHero.ctaEmailEs,
         ctaLinkedin: isEn ? rawHero.ctaLinkedinEn : rawHero.ctaLinkedinEs,
+        portraitUrl: rawHero.portraitUrl ?? undefined,
         stats: rawHero.stats.map((s) => ({
           id: s.id,
           value: s.value,
@@ -215,6 +216,7 @@ export default async function LandingPage({ params }: Props) {
             whatsappNumber={contact.whatsappNumber}
             email={contact.email}
             linkedin={contact.linkedinUrl}
+            portraitUrl={hero.portraitUrl}
           />
         )}
         <BrandsMarquee brands={brands} />

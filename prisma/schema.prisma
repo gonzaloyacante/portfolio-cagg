@@ -86,6 +86,7 @@ model Hero {
   ctaEmailEn    String     @default("Send Email")
   ctaLinkedinEs String     @default("LinkedIn")
   ctaLinkedinEn String     @default("LinkedIn")
+  portraitUrl   String?
   stats         HeroStat[]
   updatedAt     DateTime   @updatedAt
 }

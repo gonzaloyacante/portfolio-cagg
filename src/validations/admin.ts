@@ -21,6 +21,11 @@ export const heroUpdateSchema = z.object({
   ctaEmailEn: z.string().optional(),
   ctaLinkedinEs: z.string().optional(),
   ctaLinkedinEn: z.string().optional(),
+  portraitUrl: z
+    .string()
+    .url()
+    .nullish()
+    .or(z.literal('').transform(() => null)),
   stats: z.array(heroStatSchema).optional(),
 });
 

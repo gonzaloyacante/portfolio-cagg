@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, KeyRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,13 +21,13 @@ export default function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-5">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-label tracking-label text-muted-foreground font-mono uppercase">
+              <FormLabel className="font-mono text-[10px] tracking-[0.18em] uppercase">
                 Email
               </FormLabel>
               <FormControl>
@@ -36,7 +36,7 @@ export default function LoginForm() {
                   autoComplete="email"
                   autoFocus
                   placeholder="admin@ejemplo.com"
-                  className="h-11 rounded-none"
+                  className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"
                   {...field}
                 />
               </FormControl>
@@ -50,15 +50,18 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-label tracking-label text-muted-foreground font-mono uppercase">
-                Contraseña
-              </FormLabel>
+              <div className="flex items-center gap-2">
+                <KeyRound size={11} className="text-muted-foreground" />
+                <FormLabel className="font-mono text-[10px] tracking-[0.18em] uppercase">
+                  Contraseña
+                </FormLabel>
+              </div>
               <FormControl>
                 <Input
                   type="password"
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="h-11 rounded-none"
+                  className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"
                   {...field}
                 />
               </FormControl>
@@ -68,19 +71,19 @@ export default function LoginForm() {
         />
 
         {form.formState.errors.root && (
-          <p className="text-destructive text-sm">{form.formState.errors.root.message}</p>
+          <p className="text-destructive text-xs">{form.formState.errors.root.message}</p>
         )}
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between gap-2 pt-1">
           <Link
             href="/admin/forgot-password"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className="text-muted-foreground hover:text-foreground text-xs transition-colors"
           >
-            ¿Olvidó su contraseña?
+            ¿Olvidaste tu contraseña?
           </Link>
-          <Button type="submit" disabled={loading} size="lg" className="gap-2">
+          <Button type="submit" disabled={loading} className="admin-glow gap-1.5">
             {loading ? 'Verificando…' : 'Ingresar'}
-            <ArrowRight />
+            <ArrowRight size={13} />
           </Button>
         </div>
       </form>

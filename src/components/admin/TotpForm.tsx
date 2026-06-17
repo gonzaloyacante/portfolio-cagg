@@ -1,16 +1,9 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, KeyRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useTotp } from '@/hooks/use-totp';
 
@@ -19,15 +12,25 @@ export default function TotpForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-5">
+        <div className="flex items-start gap-3">
+          <div className="border-border bg-muted/40 text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-md border">
+            <KeyRound size={15} />
+          </div>
+          <div>
+            <p className="text-foreground text-sm font-semibold tracking-tight">
+              Código de verificación
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Ingresá los 6 dígitos de tu app de autenticación.
+            </p>
+          </div>
+        </div>
         <FormField
           control={form.control}
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-label tracking-label text-muted-foreground font-mono uppercase">
-                Código 2FA
-              </FormLabel>
               <FormControl>
                 <Input
                   type="text"
@@ -36,7 +39,7 @@ export default function TotpForm() {
                   autoFocus
                   autoComplete="one-time-code"
                   placeholder="000000"
-                  className="tracking-code h-14 rounded-none text-center font-mono text-2xl"
+                  className="border-border bg-background/40 h-14 rounded-[var(--admin-radius)] text-center font-mono text-2xl tracking-[0.5em]"
                   {...field}
                 />
               </FormControl>
@@ -45,9 +48,9 @@ export default function TotpForm() {
           )}
         />
 
-        <Button type="submit" disabled={loading} size="lg" className="w-full gap-2">
+        <Button type="submit" disabled={loading} size="lg" className="admin-glow w-full gap-1.5">
           {loading ? 'Verificando…' : 'Verificar código'}
-          <ArrowRight />
+          <ArrowRight size={13} />
         </Button>
       </form>
     </Form>

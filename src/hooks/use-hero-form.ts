@@ -28,6 +28,11 @@ export const heroFormSchema = z.object({
   ctaEmailEn: z.string().min(1, 'Requerido'),
   ctaLinkedinEs: z.string().min(1, 'Requerido'),
   ctaLinkedinEn: z.string().min(1, 'Requerido'),
+  portraitUrl: z
+    .string()
+    .url()
+    .nullish()
+    .or(z.literal('').transform(() => null)),
   stats: z.array(statSchema),
 });
 

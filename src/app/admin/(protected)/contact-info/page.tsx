@@ -2,7 +2,10 @@ import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
 
+import { MessageSquareQuote } from 'lucide-react';
+
 import { ContactInfoForm } from '@/components/admin/ContactInfoForm';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { prisma } from '@/lib/prisma';
 
 async function ContactInfoContent() {
@@ -22,13 +25,15 @@ async function ContactInfoContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
-          Contenido · Datos de contacto
-        </p>
-        <h1 className="text-foreground text-xl font-semibold">Datos de contacto</h1>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrowIcon={<MessageSquareQuote size={11} />}
+        eyebrow="Contenido · Datos de contacto"
+        title="Datos de contacto"
+        description="Tu nombre, email, teléfono, WhatsApp y LinkedIn. Se muestran en el header, el footer y la sección de Contacto. Al editar un campo acá, se actualiza automáticamente en todos lados."
+        previewUrl="/#contact"
+        previewLabel="Ver Contacto en vivo"
+      />
       <ContactInfoForm initial={initial} />
     </div>
   );

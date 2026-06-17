@@ -1,7 +1,6 @@
 'use client';
 
-import { CheckCircle } from 'lucide-react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2, KeyRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,33 +23,43 @@ export default function ResetPasswordForm({ token }: Props) {
 
   if (done) {
     return (
-      <div className="flex items-start gap-3">
-        <CheckCircle className="text-foreground mt-0.5 shrink-0" />
-        <p className="text-muted-foreground text-sm">
-          Contraseña actualizada. Redirigiendo al inicio de sesión…
-        </p>
+      <div className="admin-hairline bg-card/40 flex items-start gap-3 rounded-[var(--admin-radius-lg)] p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
+          <CheckCircle2 size={15} />
+        </div>
+        <div>
+          <p className="text-foreground text-sm font-semibold tracking-tight">
+            Contraseña actualizada
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+            Redirigiendo al inicio de sesión…
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-5">
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-label tracking-label text-muted-foreground font-mono uppercase">
-                Nueva contraseña
-              </FormLabel>
+              <div className="flex items-center gap-2">
+                <KeyRound size={11} className="text-muted-foreground" />
+                <FormLabel className="font-mono text-[10px] tracking-[0.18em] uppercase">
+                  Nueva contraseña
+                </FormLabel>
+              </div>
               <FormControl>
                 <Input
                   type="password"
                   autoComplete="new-password"
                   autoFocus
                   placeholder="••••••••"
-                  className="h-11 rounded-none"
+                  className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"
                   {...field}
                 />
               </FormControl>
@@ -64,7 +73,7 @@ export default function ResetPasswordForm({ token }: Props) {
           name="confirm"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-label tracking-label text-muted-foreground font-mono uppercase">
+              <FormLabel className="font-mono text-[10px] tracking-[0.18em] uppercase">
                 Confirmar contraseña
               </FormLabel>
               <FormControl>
@@ -72,7 +81,7 @@ export default function ResetPasswordForm({ token }: Props) {
                   type="password"
                   autoComplete="new-password"
                   placeholder="••••••••"
-                  className="h-11 rounded-none"
+                  className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"
                   {...field}
                 />
               </FormControl>
@@ -82,12 +91,12 @@ export default function ResetPasswordForm({ token }: Props) {
         />
 
         {form.formState.errors.root && (
-          <p className="text-destructive text-sm">{form.formState.errors.root.message}</p>
+          <p className="text-destructive text-xs">{form.formState.errors.root.message}</p>
         )}
 
-        <Button type="submit" disabled={loading} size="lg" className="w-full gap-2">
+        <Button type="submit" disabled={loading} className="admin-glow w-full gap-1.5" size="lg">
           {loading ? 'Actualizando…' : 'Actualizar contraseña'}
-          <ArrowRight />
+          <ArrowRight size={13} />
         </Button>
       </form>
     </Form>

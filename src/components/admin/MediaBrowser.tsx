@@ -3,10 +3,23 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
-import { ChevronLeft, ChevronRight, Copy, Trash2, Upload } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  ImageIcon,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 
+import { EmptyState } from '@/components/admin/EmptyState';
+import { SectionHelp } from '@/components/admin/FieldHelp';
 import { Button } from '@/components/ui/button';
 import { type MediaFile, useMedia } from '@/hooks/use-media';
+import { cn } from '@/lib/utils';
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return '';
@@ -18,11 +31,13 @@ function formatBytes(bytes: number | null): string {
 type MediaCardProps = {
   item: MediaFile;
   onDelete: (publicId: string) => void;
+  pending: boolean;
 };
 
-function MediaCard({ item, onDelete }: MediaCardProps) {
+function MediaCard({ item, onDelete, pending }: MediaCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(item.secureUrl);
@@ -33,25 +48,56 @@ function MediaCard({ item, onDelete }: MediaCardProps) {
   const name = item.publicId.split('/').pop() ?? item.publicId;
 
   return (
-    <div className="border-border group relative flex flex-col overflow-hidden border">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="admin-hairline admin-card-hover group bg-card/40 relative flex flex-col overflow-hidden rounded-[var(--admin-radius-lg)]"
+    >
       <div className="bg-muted relative aspect-square overflow-hidden">
         <Image
           src={item.secureUrl}
           alt={name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 17vw"
-          className="object-contain"
+          className={cn('object-contain transition-transform duration-300', hovered && 'scale-105')}
         />
+        {confirmDelete && (
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/70 p-2 backdrop-blur-sm">
+            <Button
+              size="xs"
+              variant="destructive"
+              onClick={() => onDelete(item.publicId)}
+              disabled={pending}
+            >
+              Eliminar
+            </Button>
+            <Button size="xs" variant="outline" onClick={() => setConfirmDelete(false)}>
+              Cancelar
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-3">
         <p className="text-foreground min-w-0 truncate text-xs font-medium" title={name}>
           {name}
         </p>
-        <p className="text-muted-foreground text-xs">
-          {item.format.toUpperCase()}
-          {item.width && item.height ? ` · ${item.width}×${item.height}` : ''}
-          {item.bytes ? ` · ${formatBytes(item.bytes)}` : ''}
+        <p className="text-muted-foreground flex items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] uppercase">
+          <span>{item.format.toUpperCase()}</span>
+          {item.width && item.height ? (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="tabular-nums">
+                {item.width}×{item.height}
+              </span>
+            </>
+          ) : null}
+          {item.bytes ? (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="tabular-nums">{formatBytes(item.bytes)}</span>
+            </>
+          ) : null}
         </p>
 
         <div className="mt-auto flex items-center gap-1">
@@ -59,34 +105,22 @@ function MediaCard({ item, onDelete }: MediaCardProps) {
             type="button"
             onClick={handleCopy}
             title="Copiar URL"
-            className="text-muted-foreground hover:text-foreground p-1 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
           >
-            <Copy size={13} />
+            {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+            {copied ? '¡Copiado!' : 'Copiar URL'}
           </button>
-          {copied && <span className="text-muted-foreground text-xs">¡Copiado!</span>}
 
-          <div className="ml-auto">
-            {confirmDelete ? (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs">¿Eliminar?</span>
-                <Button size="sm" variant="destructive" onClick={() => onDelete(item.publicId)}>
-                  Sí
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setConfirmDelete(false)}>
-                  No
-                </Button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                title="Eliminar"
-                className="text-muted-foreground hover:text-destructive p-1 transition-colors"
-              >
-                <Trash2 size={13} />
-              </button>
-            )}
-          </div>
+          {!confirmDelete && (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              title="Eliminar"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-auto rounded-md p-1 transition-colors"
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -112,13 +146,60 @@ export function MediaBrowser() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-muted-foreground text-sm">
-          {total} {total === 1 ? 'imagen' : 'imágenes'}
-        </p>
+    <div className="space-y-5">
+      <SectionHelp
+        title="¿Qué es la galería de imágenes?"
+        description="Acá subís todas las imágenes que usás en el sitio (fotos, logos, etc.). Las imágenes se guardan en Cloudinary (un servicio de hosting de imágenes) y quedan disponibles para usar en otras secciones del sitio, por ejemplo la foto de portada del Hero."
+        appearsIn="Las imágenes que subís acá se pueden elegir desde otros formularios (ej: Hero → Foto de portada)."
+        tips={[
+          'Tamaño máximo por imagen: 10 MB.',
+          'Formatos soportados: JPG, PNG, WebP, GIF, SVG.',
+          'Una vez subida, podés elegir la imagen en cualquier campo de tipo "imagen" del admin.',
+        ]}
+      />
 
-        <div>
+      <div className="admin-hairline bg-card/40 flex flex-wrap items-center justify-between gap-4 rounded-[var(--admin-radius-lg)] px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="border-border bg-muted/30 text-muted-foreground flex h-9 w-9 items-center justify-center rounded-md border">
+            <ImageIcon size={14} />
+          </div>
+          <div>
+            <p className="text-foreground text-sm font-semibold tracking-tight">
+              {total} {total === 1 ? 'imagen' : 'imágenes'} en la galería
+            </p>
+            <p className="text-muted-foreground text-[11px]">
+              JPEG, PNG, WebP, GIF y SVG — máximo 10 MB por archivo
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {totalPages > 1 && (
+            <div className="border-border bg-muted/30 flex items-center gap-1 rounded-[var(--admin-radius)] border p-1">
+              <button
+                type="button"
+                onClick={() => fetchPage(page - 1)}
+                disabled={page <= 1 || loading}
+                className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors disabled:opacity-40"
+                aria-label="Página anterior"
+              >
+                <ChevronLeft size={13} />
+              </button>
+              <span className="text-muted-foreground px-2 font-mono text-[10px] tabular-nums">
+                {page} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => fetchPage(page + 1)}
+                disabled={page >= totalPages || loading}
+                className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors disabled:opacity-40"
+                aria-label="Página siguiente"
+              >
+                <ChevronRight size={13} />
+              </button>
+            </div>
+          )}
+
           <input
             ref={fileInputRef}
             type="file"
@@ -130,63 +211,52 @@ export function MediaBrowser() {
           <Button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            size="sm"
-            className="gap-2"
+            className="admin-glow gap-1.5"
           >
-            <Upload size={14} />
+            <Upload size={13} />
             {uploading ? 'Subiendo…' : 'Subir imagen'}
           </Button>
         </div>
       </div>
 
       {error && (
-        <p className="border-destructive text-destructive border px-4 py-2 text-sm">{error}</p>
+        <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-center gap-2 rounded-[var(--admin-radius)] border px-3 py-2 text-xs">
+          <X size={12} />
+          {error}
+        </div>
       )}
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="bg-muted border-border aspect-square animate-pulse border" />
+            <div
+              key={i}
+              className="admin-shimmer aspect-square rounded-[var(--admin-radius-lg)]"
+              style={{ animationDelay: `${i * 50}ms` }}
+            />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="border-border flex flex-col items-center justify-center border py-16">
-          <p className="text-muted-foreground text-sm">Sin imágenes todavía.</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Sube tu primera imagen con el botón de arriba.
-          </p>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="Sin imágenes todavía"
+          description="Subí tu primera imagen con el botón de arriba. Después podés copiarla o eliminarla."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-1.5"
+            >
+              <Upload size={13} />
+              Subir primera
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {items.map((item) => (
-            <MediaCard key={item.id} item={item} onDelete={remove} />
+            <MediaCard key={item.id} item={item} onDelete={remove} pending={false} />
           ))}
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={() => fetchPage(page - 1)}
-            disabled={page <= 1 || loading}
-            className="text-muted-foreground hover:text-foreground disabled:opacity-40"
-            aria-label="Página anterior"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="text-muted-foreground text-sm">
-            {page} / {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => fetchPage(page + 1)}
-            disabled={page >= totalPages || loading}
-            className="text-muted-foreground hover:text-foreground disabled:opacity-40"
-            aria-label="Página siguiente"
-          >
-            <ChevronRight size={18} />
-          </button>
         </div>
       )}
     </div>

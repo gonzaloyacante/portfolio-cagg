@@ -1,5 +1,8 @@
 import { headers } from 'next/headers';
 
+import { ShieldCheck } from 'lucide-react';
+
+import { PageHeader } from '@/components/admin/PageHeader';
 import SecurityForm from '@/components/admin/SecurityForm';
 import { auth } from '@/lib/auth';
 
@@ -8,14 +11,14 @@ export default async function SecurityPage() {
   const twoFactorEnabled = Boolean((session?.user as Record<string, unknown>)?.twoFactorEnabled);
 
   return (
-    <main className="max-w-xl p-6">
-      <div className="mb-8">
-        <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
-          Admin · Seguridad
-        </p>
-        <h1 className="text-xl font-semibold">Seguridad de la cuenta</h1>
-      </div>
+    <div className="mx-auto max-w-2xl space-y-7">
+      <PageHeader
+        eyebrowIcon={<ShieldCheck size={11} />}
+        eyebrow="Sistema · Seguridad"
+        title="Seguridad de la cuenta"
+        description="Activá la autenticación de dos factores para proteger el acceso al panel."
+      />
       <SecurityForm twoFactorEnabled={twoFactorEnabled} />
-    </main>
+    </div>
   );
 }

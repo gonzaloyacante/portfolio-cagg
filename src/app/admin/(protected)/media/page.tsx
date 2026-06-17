@@ -1,17 +1,19 @@
 import { Suspense } from 'react';
 
+import { Image as ImageIcon } from 'lucide-react';
+
 import { MediaBrowser } from '@/components/admin/MediaBrowser';
+import { PageHeader } from '@/components/admin/PageHeader';
 
 function MediaContent() {
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-label tracking-label text-muted-foreground mb-1 font-mono uppercase">
-          Contenido · Imágenes
-        </p>
-        <h1 className="text-foreground text-xl font-semibold">Galería de imágenes</h1>
-      </div>
-
+    <div className="space-y-7">
+      <PageHeader
+        eyebrowIcon={<ImageIcon size={11} />}
+        eyebrow="Contenido · Imágenes"
+        title="Galería de imágenes"
+        description="Subí y administrá las imágenes del portfolio. Después podés usarlas en cualquier sección."
+      />
       <MediaBrowser />
     </div>
   );

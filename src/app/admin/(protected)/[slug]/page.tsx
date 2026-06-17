@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 
 import { CollectionPage } from '@/components/admin/CollectionPage';
 import { COLLECTION_CONFIG, SUMMARIZERS } from '@/constants/admin-config';
+import { getSectionHelp } from '@/constants/admin-help';
 import type { CollectionItem } from '@/hooks/use-collection';
 import { prisma } from '@/lib/prisma';
 
@@ -45,7 +46,14 @@ async function CollectionContent({ slug }: { slug: string }) {
     ...item,
     _summary: summarize(item),
   }));
-  return <CollectionPage slug={slug} config={config} initialItems={initialItems} />;
+  return (
+    <CollectionPage
+      slug={slug}
+      config={config}
+      initialItems={initialItems}
+      previewUrl={getSectionHelp(slug)?.url}
+    />
+  );
 }
 
 export default async function CollectionRoute({ params }: Props) {

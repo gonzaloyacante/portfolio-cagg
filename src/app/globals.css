@@ -40,11 +40,52 @@
       height: 0;
     }
   }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
   --animate-marquee: marquee 45s linear infinite;
   --animate-fade-up: fade-up 0.8s ease-out both;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-shimmer: shimmer 2.4s linear infinite;
+  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
+  --animate-scale-in: scale-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-slide-down: slide-down 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
   /* Typography — tamaños y trackings específicos del sistema de diseño */
   --text-overline: 0.6875rem;
@@ -68,6 +109,23 @@
   --z-nav-index: 30;
   --z-whatsapp: 20;
   --z-dropdown: 10;
+
+  /* === Admin 2026 — soft modern tokens (admin-only aesthetic) === */
+  --admin-radius-sm: 0.5rem;
+  --admin-radius: 0.75rem;
+  --admin-radius-lg: 1rem;
+  --admin-radius-xl: 1.25rem;
+  --shadow-admin-sm: 0 1px 2px 0 rgb(0 0 0 / 0.25);
+  --shadow-admin:
+    0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 1px 3px 0 rgb(0 0 0 / 0.4),
+    0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-admin-md:
+    0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 4px 6px -1px rgb(0 0 0 / 0.45),
+    0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-admin-lg:
+    0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 10px 15px -3px rgb(0 0 0 / 0.5),
+    0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-admin-glow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 8px 24px -8px rgb(0 0 0 / 0.6);
 }
 
 /* === Token mapping (CSS vars → Tailwind utilities) === */
@@ -234,6 +292,186 @@
 .num {
   font-family: var(--font-mono), monospace;
   font-feature-settings: 'tnum';
+}
+
+/* === Admin 2026 utility classes === */
+
+/* Glass surface — used for top bar, floating panels */
+.admin-glass {
+  background: color-mix(in oklab, var(--card) 75%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Subtle gradient mesh background (top-left ambient light) */
+.admin-mesh {
+  background:
+    radial-gradient(
+      ellipse 600px 400px at 0% 0%,
+      color-mix(in oklab, var(--foreground) 5%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 500px 350px at 100% 100%,
+      color-mix(in oklab, var(--foreground) 3%, transparent),
+      transparent 60%
+    );
+}
+
+/* Soft hairline border for cards on dark backgrounds */
+.admin-hairline {
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+    inset 0 0 0 1px color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+/* Card hover lift */
+.admin-card-hover {
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.18s ease;
+}
+.admin-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-admin-md);
+}
+
+/* Gradient text — for hero numbers and brand accents */
+.admin-text-gradient {
+  background: linear-gradient(
+    180deg,
+    var(--foreground) 0%,
+    color-mix(in oklab, var(--foreground) 55%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Shimmer skeleton (smoother than the default animate-pulse) */
+.admin-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--muted) 80%, transparent) 0%,
+    color-mix(in oklab, var(--muted) 50%, transparent) 50%,
+    color-mix(in oklab, var(--muted) 80%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Soft animated focus ring for inputs */
+.admin-focus-ring {
+  transition:
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.admin-focus-ring:focus-within {
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--ring) 22%, transparent),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+}
+
+/* Gradient accent border (used on focus state for inputs/cards) */
+.admin-accent-border {
+  position: relative;
+}
+.admin-accent-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--foreground) 30%, transparent),
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.admin-accent-border:focus-within::before,
+.admin-accent-border[data-focused='true']::before {
+  opacity: 1;
+}
+
+/* Subtle ambient glow used for primary CTAs / active nav indicators */
+.admin-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 8px 24px -8px color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+
+/* Status dot — animated for "live" indicators */
+.admin-status-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+}
+.admin-status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.3;
+  animation: var(--animate-pulse-glow);
+}
+
+/* === View Transitions API — smooth SPA-like page changes === */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.18s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out-soft;
+}
+::view-transition-new(root) {
+  animation-name: fade-in-soft;
+}
+
+@keyframes fade-out-soft {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes fade-in-soft {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Allow elements to opt-in to a named view transition */
+[data-vt='admin-header'] {
+  view-transition-name: admin-header;
+}
+[data-vt='admin-sidebar'] {
+  view-transition-name: admin-sidebar;
+}
+[data-vt='admin-main'] {
+  view-transition-name: admin-main;
 }
 
 /* === Reduced motion — opt-in model === */
