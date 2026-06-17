@@ -24,6 +24,24 @@ import {
   X,
 } from 'lucide-react';
 
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 import { CollectionItemForm } from '@/components/admin/CollectionItemForm';
 import { EmptyState } from '@/components/admin/EmptyState';
 import { PageHeader } from '@/components/admin/PageHeader';
@@ -186,6 +204,38 @@ function ItemCardPreview({ item, slug }: { item: CollectionItem; slug: string })
   );
 }
 
+function SortableItemCard(props: {
+  item: CollectionItem;
+  slug: string;
+  index: number;
+  confirming: boolean;
+  saving: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDeleteConfirm: () => void;
+  onCancelDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.item.id,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <ItemCard
+        {...props}
+        isDragging={isDragging}
+        dragHandleProps={{}}
+        dragHandleListeners={listeners}
+      />
+    </div>
+  );
+}
+
 function buildInitial(fields: CollectionFieldDef[], item?: CollectionItem): Record<string, string> {
   const result: Record<string, string> = {};
   for (const field of fields) {
@@ -209,6 +259,9 @@ function ItemCard({
   onDelete,
   onDeleteConfirm,
   onCancelDelete,
+  isDragging,
+  dragHandleProps,
+  dragHandleListeners,
 }: {
   item: CollectionItem;
   slug: string;
@@ -219,13 +272,17 @@ function ItemCard({
   onDelete: () => void;
   onDeleteConfirm: () => void;
   onCancelDelete: () => void;
+  isDragging: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+  dragHandleListeners?: Record<string, unknown>;
 }) {
   return (
     <article
       data-testid={`collection-item-${item.id}`}
       className={cn(
         'admin-hairline admin-card-hover group bg-card/50 relative flex flex-col gap-4 overflow-hidden rounded-[var(--admin-radius-lg)] p-5',
-        confirming && 'ring-destructive/40 ring-1'
+        confirming && 'ring-destructive/40 ring-1',
+        isDragging && 'ring-foreground/30 opacity-50 ring-2'
       )}
     >
       {/* Card header with drag handle + actions */}
@@ -234,10 +291,17 @@ function ItemCard({
           <div className="border-border bg-muted/40 text-muted-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-[10px] tracking-wider tabular-nums">
             {String(index + 1).padStart(2, '0')}
           </div>
-          <GripVertical
-            size={12}
-            className="text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors"
-          />
+          <button
+            type="button"
+            aria-label="Arrastrar para reordenar"
+            title="Arrastrar para reordenar"
+            data-testid={`collection-item-drag-${item.id}`}
+            className="text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/40 flex h-7 w-7 cursor-grab items-center justify-center rounded-md transition-colors active:cursor-grabbing"
+            {...(dragHandleProps ?? {})}
+            {...(dragHandleListeners ?? {})}
+          >
+            <GripVertical size={12} />
+          </button>
         </div>
         <div className="flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
           <button
@@ -309,22 +373,45 @@ function ItemCard({
 }
 
 export function CollectionPage({ slug, config, initialItems, previewUrl }: CollectionPageProps) {
-  const { saving, create, update, remove } = useCollection(slug);
+  const { saving, create, update, remove, reorder } = useCollection(slug);
   const [dialogState, setDialogState] = useState<
     { mode: 'add' } | { mode: 'edit'; item: CollectionItem } | null
   >(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [localOrder, setLocalOrder] = useState<string[] | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const Icon = ICON_BY_SLUG[slug] ?? FileText;
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return initialItems;
+    const source = localOrder
+      ? (localOrder
+          .map((id) => initialItems.find((i) => i.id === id))
+          .filter(Boolean) as CollectionItem[])
+      : initialItems;
+    if (!query.trim()) return source;
     const q = query.toLowerCase();
-    return initialItems.filter((item) =>
+    return source.filter((item) =>
       Object.values(item).some((v) => typeof v === 'string' && v.toLowerCase().includes(q))
     );
-  }, [initialItems, query]);
+  }, [initialItems, query, localOrder]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const currentOrder = localOrder ?? initialItems.map((i) => i.id);
+    const oldIndex = currentOrder.indexOf(String(active.id));
+    const newIndex = currentOrder.indexOf(String(over.id));
+    if (oldIndex === -1 || newIndex === -1) return;
+    const newOrder = arrayMove(currentOrder, oldIndex, newIndex);
+    setLocalOrder(newOrder);
+    await reorder(newOrder);
+  };
 
   const handleSubmit = async (data: Record<string, string>): Promise<boolean> => {
     const ok =
@@ -418,24 +505,28 @@ export function CollectionPage({ slug, config, initialItems, previewUrl }: Colle
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((item, index) => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              slug={slug}
-              index={index}
-              saving={saving}
-              confirming={confirmDeleteId === item.id}
-              onEdit={() => setDialogState({ mode: 'edit', item })}
-              onDelete={() => setConfirmDeleteId(item.id)}
-              onDeleteConfirm={() => {
-                void handleDelete(item.id);
-              }}
-              onCancelDelete={() => setConfirmDeleteId(null)}
-            />
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filtered.map((i) => i.id)} strategy={rectSortingStrategy}>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((item, index) => (
+                <SortableItemCard
+                  key={item.id}
+                  item={item}
+                  slug={slug}
+                  index={index}
+                  saving={saving}
+                  confirming={confirmDeleteId === item.id}
+                  onEdit={() => setDialogState({ mode: 'edit', item })}
+                  onDelete={() => setConfirmDeleteId(item.id)}
+                  onDeleteConfirm={() => {
+                    void handleDelete(item.id);
+                  }}
+                  onCancelDelete={() => setConfirmDeleteId(null)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Search no results */}

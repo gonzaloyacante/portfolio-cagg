@@ -48,5 +48,18 @@ export function useCollection(slug: string) {
     }
   };
 
-  return { saving, create, update, remove };
+  const reorder = async (ids: string[]): Promise<boolean> => {
+    setSaving(true);
+    try {
+      await axiosInstance.put(`/api/admin/reorder/${slug}`, { ids });
+      router.refresh();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return { saving, create, update, remove, reorder };
 }

@@ -410,23 +410,47 @@
     0 8px 24px -8px color-mix(in oklab, var(--foreground) 14%, transparent);
 }
 
-/* Status dot — animated for "live" indicators */
+/* Status dot — animated for "live" indicators.
+   The wrapper is a fixed 12x12 box so the pulse ring (which is
+   12x12 and centered on the 6x6 dot) doesn't overlap adjacent text. */
 .admin-status-dot {
   position: relative;
   display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+}
+.admin-status-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 6px;
   height: 6px;
+  transform: translate(-50%, -50%);
   border-radius: 9999px;
   background: currentColor;
 }
 .admin-status-dot::after {
   content: '';
   position: absolute;
-  inset: -3px;
+  inset: 0;
   border-radius: 9999px;
   background: currentColor;
   opacity: 0.3;
   animation: var(--animate-pulse-glow);
+}
+
+/* Static version — no pulse, smaller, for tight spaces (badges, pills) */
+.admin-status-dot-static {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 /* === View Transitions API — smooth SPA-like page changes === */

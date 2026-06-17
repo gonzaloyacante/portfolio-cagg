@@ -282,13 +282,22 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
               collapsed && 'lg:flex-col lg:gap-1.5 lg:p-2'
             )}
           >
-            <div className="border-border bg-foreground text-background flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-              {userEmail.slice(0, 2).toUpperCase()}
+            <div className="border-border bg-foreground text-background relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+              <span className="relative z-10">{userEmail.slice(0, 2).toUpperCase()}</span>
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"
+              />
             </div>
-            <div className={cn('min-w-0 flex-1 leading-tight', collapsed && 'lg:hidden')}>
-              <div className="text-foreground truncate text-xs font-medium">{userEmail}</div>
+            <div className={cn('min-w-0 flex-1 space-y-1 self-center', collapsed && 'lg:hidden')}>
+              <div
+                className="text-foreground block w-full truncate text-xs leading-tight font-medium"
+                title={userEmail}
+              >
+                {userEmail}
+              </div>
               <div className="text-muted-foreground/70 flex items-center gap-1.5 font-mono text-[9px] tracking-[0.18em] uppercase">
-                <span className="admin-status-dot text-emerald-400" />
+                <span className="admin-status-dot-static text-emerald-400" />
                 Administrador
               </div>
             </div>
