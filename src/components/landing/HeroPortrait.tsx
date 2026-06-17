@@ -31,9 +31,12 @@ export function HeroPortrait({ src, alt, figLabel, name, origin }: HeroPortraitP
         alt={alt}
         width={400}
         height={520}
+        sizes="(max-width: 1024px) 100vw, 33vw"
+        quality={85}
         className="block h-auto w-full grayscale-[15%]"
         draggable={false}
         priority
+        fetchPriority="high"
       />
       <div className="border-border flex items-center justify-between border-t px-5 py-4">
         <span className="text-label tracking-label text-muted-foreground font-mono uppercase">
