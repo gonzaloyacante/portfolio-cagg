@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!--
+    Safari pinned-tab icon. Must be monochrome (single color) — Safari
+    applies the OS tint at runtime, so any color here is ignored.
+    Use a simple "CG" monogram that reads well at 16x16.
+  -->
+  <rect width="100" height="100" rx="18" fill="black"/>
+  <text
+    x="50"
+    y="68"
+    font-family="-apple-system, system-ui, sans-serif"
+    font-size="56"
+    font-weight="800"
+    fill="white"
+    text-anchor="middle"
+    letter-spacing="-2"
+  >CG</text>
+</svg>

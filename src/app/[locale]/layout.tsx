@@ -42,6 +42,14 @@ export default async function LocaleLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        {/*
+          Icon chain. Modern browsers prefer the SVG (sharp on hi-DPI,
+          scales to any size). Safari pinned-tab uses a monochrome SVG
+          so the OS can tint it to match the user's theme.
+        */}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#0a0a0a" />
       </head>
       <body
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}

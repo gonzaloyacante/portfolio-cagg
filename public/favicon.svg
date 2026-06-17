@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!--
+    Modern SVG favicon. Used by browsers that support SVG icons
+    (Chrome, Firefox, Safari, Edge — all modern ones). The raster
+    .ico is kept as a fallback for very old browsers and the
+    apple-touch / android-chrome variants come from icon.tsx.
+  -->
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#1a1a2a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#g)"/>
+  <text
+    x="32"
+    y="44"
+    font-family="-apple-system, system-ui, sans-serif"
+    font-size="32"
+    font-weight="800"
+    fill="#fafafa"
+    text-anchor="middle"
+    letter-spacing="-1.5"
+  >CG</text>
+</svg>
