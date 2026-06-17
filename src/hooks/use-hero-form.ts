@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
+import { toast } from 'sonner';
 import { z } from 'zod/v4';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,8 +57,10 @@ export function useHeroForm(initial: HeroFormValues) {
     try {
       await axiosInstance.put('/api/admin/hero', data);
       setStatus('success');
+      toast.success('Hero guardado', { description: 'Los cambios ya se ven en la landing.' });
     } catch {
       setStatus('error');
+      toast.error('No se pudo guardar', { description: 'Revisá los datos e intentá de nuevo.' });
     }
   });
 

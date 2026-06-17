@@ -158,6 +158,28 @@ export function MediaBrowser() {
         ]}
       />
 
+      {/* File type breakdown */}
+      {total > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {Object.entries(
+            items.reduce<Record<string, number>>((acc, m) => {
+              const fmt = m.format.toUpperCase();
+              acc[fmt] = (acc[fmt] ?? 0) + 1;
+              return acc;
+            }, {})
+          ).map(([fmt, count]) => (
+            <span
+              key={fmt}
+              className="border-border bg-muted/30 text-muted-foreground inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase"
+              title={`${count} imagen${count === 1 ? '' : 'es'} en formato ${fmt}`}
+            >
+              {fmt}
+              <span className="text-foreground/70 tabular-nums">{count}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="admin-hairline bg-card/40 flex flex-wrap items-center justify-between gap-4 rounded-[var(--admin-radius-lg)] px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="border-border bg-muted/30 text-muted-foreground flex h-9 w-9 items-center justify-center rounded-md border">
