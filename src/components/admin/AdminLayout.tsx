@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 import { CommandPalette, openCommandPalette } from '@/components/admin/CommandPalette';
+import { Toaster } from '@/components/ui/sonner';
 import { ADMIN_NAV, ADMIN_NAV_GROUPS } from '@/constants/admin-config';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -379,6 +380,7 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
       </div>
 
       <CommandPalette />
+      <Toaster position="bottom-right" richColors closeButton />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import {
   Building2,
   Calendar,
+  Copy,
   FileText,
   GraduationCap,
   GripVertical,
@@ -211,6 +212,7 @@ function SortableItemCard(props: {
   confirming: boolean;
   saving: boolean;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
   onDeleteConfirm: () => void;
   onCancelDelete: () => void;
@@ -256,6 +258,7 @@ function ItemCard({
   confirming,
   saving,
   onEdit,
+  onDuplicate,
   onDelete,
   onDeleteConfirm,
   onCancelDelete,
@@ -269,6 +272,7 @@ function ItemCard({
   confirming: boolean;
   saving: boolean;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
   onDeleteConfirm: () => void;
   onCancelDelete: () => void;
@@ -312,6 +316,17 @@ function ItemCard({
           >
             <Pencil size={11} />
             Editar
+          </button>
+          <button
+            type="button"
+            onClick={onDuplicate}
+            disabled={saving}
+            data-testid={`collection-item-duplicate-${item.id}`}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+            title="Duplicar este registro"
+          >
+            <Copy size={11} />
+            Duplicar
           </button>
           {confirming ? (
             <div className="flex items-center gap-1">
@@ -427,6 +442,17 @@ export function CollectionPage({ slug, config, initialItems, previewUrl }: Colle
     if (ok) setConfirmDeleteId(null);
   };
 
+  const handleDuplicate = async (item: CollectionItem) => {
+    // Strip server-managed fields and copy everything else.
+    const { id: _id, _summary: _s, ...rest } = item as Record<string, unknown>;
+    void _id;
+    void _s;
+    const payload = Object.fromEntries(
+      Object.entries(rest).map(([k, v]) => [k, typeof v === 'string' ? v : ''])
+    );
+    await create(payload);
+  };
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -517,6 +543,7 @@ export function CollectionPage({ slug, config, initialItems, previewUrl }: Colle
                   saving={saving}
                   confirming={confirmDeleteId === item.id}
                   onEdit={() => setDialogState({ mode: 'edit', item })}
+                  onDuplicate={() => handleDuplicate(item)}
                   onDelete={() => setConfirmDeleteId(item.id)}
                   onDeleteConfirm={() => {
                     void handleDelete(item.id);
