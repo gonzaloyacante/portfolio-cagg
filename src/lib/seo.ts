@@ -36,7 +36,10 @@ export function buildMetadata({
   const url = `${APP_URL}/${locale}${path === '/' ? '' : path}`;
   const fullTitle = `${title} — ${SITE_NAME}`;
   const canonical = path === '/' ? `${APP_URL}/${locale}` : url;
-  const image = ogImage ?? DEFAULT_OG_IMAGE;
+  // Per-locale OG image: English variant for the /en path, default
+  // (Spanish) for everything else.
+  const defaultImage = locale === 'en' ? `${APP_URL}/opengraph-image-en` : DEFAULT_OG_IMAGE;
+  const image = ogImage ?? defaultImage;
   const otherLocale = locale === 'es' ? 'en' : 'es';
 
   return {
