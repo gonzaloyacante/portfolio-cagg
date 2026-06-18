@@ -241,6 +241,24 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--foreground);
   }
+  /*
+   * Strong, consistent focus ring for keyboard users. Mouse users still
+   * see the focus state via the browser default outline (we only style
+   * :focus-visible, which only triggers on keyboard / programmatic focus).
+   * Uses an inset+offset ring so it works on any background color.
+   */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* On dark backgrounds, lift the focus ring contrast a bit. */
+  :focus-visible:not(:is(button, a, input, select, textarea, summary)) {
+    outline-color: var(--foreground);
+  }
 }
 
 /* === Utility classes === */

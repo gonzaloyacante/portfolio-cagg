@@ -151,6 +151,54 @@ export function personJsonLd(locale: 'es' | 'en') {
   };
 }
 
+/**
+ * Build a ProfessionalService schema — wraps the Person as a service
+ * provider and adds the contact channel. This is the schema Google
+ * prefers for freelancers / consultants, and it's the one that can
+ * surface the "service" rich result on mobile SERPs.
+ */
+export function professionalServiceJsonLd(
+  locale: 'es' | 'en',
+  contact: {
+    phoneDisplay: string;
+    whatsappNumber: string;
+    email: string;
+    linkedinUrl: string;
+    location: string;
+  } | null
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    '@id': `${APP_URL}/#service`,
+    name: SITE_NAME,
+    description:
+      locale === 'es'
+        ? 'Servicios de ingeniería para optimización de líneas de producción industrial: termoformado, BOPP, metalizado, extrusión PP, eficiencia energética y puesta a punto de maquinaria.'
+        : 'Engineering services for industrial production line optimization: thermoforming, BOPP, metallizing, PP extrusion, energy efficiency, and machinery commissioning.',
+    url: `${APP_URL}/${locale}`,
+    image: DEFAULT_OG_IMAGE,
+    provider: { '@id': `${APP_URL}/#person` },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Argentina',
+    },
+    ...(contact
+      ? {
+          telephone: contact.phoneDisplay,
+          email: contact.email,
+          address: {
+            '@type': 'PostalAddress',
+            addressCountry: 'AR',
+            addressLocality: contact.location,
+          },
+        }
+      : {}),
+    priceRange: '$$',
+    sameAs: ['https://www.linkedin.com/in/carlos-guerra'].filter(Boolean),
+  };
+}
+
 /** Build a WebSite JSON-LD object. */
 export function websiteJsonLd(locale: 'es' | 'en') {
   return {
@@ -162,6 +210,49 @@ export function websiteJsonLd(locale: 'es' | 'en') {
     inLanguage: locale === 'es' ? 'es-AR' : 'en-US',
     publisher: { '@id': `${APP_URL}/#person` },
     author: { '@id': `${APP_URL}/#person` },
+  };
+}
+
+/** ItemList JSON-LD for the services collection. */
+export function servicesItemListJsonLd(
+  locale: 'es' | 'en',
+  services: { id: string; label: string }[]
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    '@id': `${APP_URL}/#services`,
+    name: locale === 'es' ? 'Servicios de ingeniería' : 'Engineering services',
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    numberOfItems: services.length,
+    itemListElement: services.map((s, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: s.label,
+      url: `${APP_URL}/${locale}/#services`,
+    })),
+  };
+}
+
+/** ItemList JSON-LD for the projects collection (Case studies). */
+export function projectsItemListJsonLd(
+  locale: 'es' | 'en',
+  projects: { id: string; title: string; period: string; tag: string }[]
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    '@id': `${APP_URL}/#projects`,
+    name: locale === 'es' ? 'Casos de estudio' : 'Case studies',
+    itemListOrder: 'https://schema.org/ItemListOrderAscending',
+    numberOfItems: projects.length,
+    itemListElement: projects.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: p.title,
+      description: p.tag,
+      url: `${APP_URL}/${locale}/#projects`,
+    })),
   };
 }
 

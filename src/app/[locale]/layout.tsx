@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { WebVitals } from '@/components/WebVitals';
+import { SkipLink } from '@/components/common/SkipLink';
 import { routing } from '@/i18n/routing';
 import { fontDisplay, fontMono, fontSans } from '@/lib/fonts';
 import { defaultViewport } from '@/lib/viewport';
@@ -42,6 +43,9 @@ export default async function LocaleLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        {/* Google Fonts hosts — used by next/font with display:swap. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/*
           Icon chain. Modern browsers prefer the SVG (sharp on hi-DPI,
           scales to any size). Safari pinned-tab uses a monochrome SVG
@@ -95,6 +99,7 @@ export default async function LocaleLayout({
       <body
         className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} flex min-h-full flex-col antialiased`}
       >
+        <SkipLink />
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
         <WebVitals />
         <GoogleAnalytics />

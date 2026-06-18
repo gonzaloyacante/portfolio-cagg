@@ -21,7 +21,14 @@ import { Testimonials } from '@/components/landing/Testimonials';
 import { Timeline } from '@/components/landing/Timeline';
 import type { SectionMeta } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
-import { breadcrumbJsonLd, personJsonLd, websiteJsonLd } from '@/lib/seo';
+import {
+  breadcrumbJsonLd,
+  personJsonLd,
+  professionalServiceJsonLd,
+  projectsItemListJsonLd,
+  servicesItemListJsonLd,
+  websiteJsonLd,
+} from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -207,13 +214,23 @@ export default async function LandingPage({ params }: Props) {
     a: isEn ? f.aEn : f.aEs,
   }));
 
-  // Build the JSON-LD payload for structured data. Four pieces:
+  // Build the JSON-LD payload for structured data. Six pieces:
   // - Person: identifies the site owner across the web
+  // - ProfessionalService: wraps the Person as a service provider
+  //   (preferred by Google for freelancers/consultants)
   // - WebSite: tells search engines this is a real site
+  // - ItemList (services): the list of services offered
+  // - ItemList (projects): the case studies / portfolio items
   // - BreadcrumbList: the major sections of the page
   // - FAQPage: the FAQ schema so the Q&A can show as rich results
   const personLd = personJsonLd(locale as 'es' | 'en');
+  const serviceLd = professionalServiceJsonLd(locale as 'es' | 'en', contact);
   const websiteLd = websiteJsonLd(locale as 'es' | 'en');
+  const servicesLd = servicesItemListJsonLd(locale as 'es' | 'en', serviceItems);
+  const projectsLd = projectsItemListJsonLd(
+    locale as 'es' | 'en',
+    projectItems.map((p) => ({ id: p.id, title: p.title, period: p.period, tag: p.tag }))
+  );
   const breadcrumbLd = breadcrumbJsonLd(locale as 'es' | 'en', [
     { name: isEn ? 'Home' : 'Inicio', path: '/' },
     ...SECTION_SLUGS.map((s) => ({
@@ -233,10 +250,15 @@ export default async function LandingPage({ params }: Props) {
       },
     })),
   };
-  const jsonLd = [personLd, websiteLd, breadcrumbLd, faqLd];
+  const jsonLd = [personLd, serviceLd, websiteLd, servicesLd, projectsLd, breadcrumbLd, faqLd];
 
   return (
     <>
+      {/*
+        JSON-LD payload. Each Script tag is a single @graph item. All
+        seven ship with strategy="beforeInteractive" so they're parsed
+        by the time the head is ready (helps Google's renderer).
+      */}
       <Script
         id="ld-person"
         type="application/ld+json"
@@ -244,22 +266,40 @@ export default async function LandingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[0]) }}
       />
       <Script
-        id="ld-website"
+        id="ld-service"
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[1]) }}
       />
       <Script
-        id="ld-breadcrumb"
+        id="ld-website"
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[2]) }}
       />
       <Script
-        id="ld-faq"
+        id="ld-services"
         type="application/ld+json"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[3]) }}
+      />
+      <Script
+        id="ld-projects"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[4]) }}
+      />
+      <Script
+        id="ld-breadcrumb"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[5]) }}
+      />
+      <Script
+        id="ld-faq"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[6]) }}
       />
       <Header />
       <SectionIndex />

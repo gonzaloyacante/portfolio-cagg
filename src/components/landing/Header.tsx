@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
 import { LangSwitch } from '@/components/ui/lang-switch';
+import { useActiveSection } from '@/hooks/use-active-section';
 import { routing } from '@/i18n/routing';
 
 import { MobileMenu } from './MobileMenu';
@@ -44,6 +45,8 @@ export function Header() {
     { href: '#contact', label: t('contact') },
   ];
 
+  const activeSection = useActiveSection(links.map((l) => l.href.slice(1)));
+
   return (
     <header
       data-testid="site-header"
@@ -74,16 +77,23 @@ export function Header() {
         </a>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              data-testid={`nav-${l.href.replace('#', '')}`}
-              className="text-muted-foreground hover:text-foreground text-sm font-medium tracking-wide transition-colors duration-300"
-            >
-              {l.label}
-            </a>
-          ))}
+          {links.map((l) => {
+            const sectionId = l.href.slice(1);
+            const isActive = activeSection === sectionId;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                data-testid={`nav-${sectionId}`}
+                aria-current={isActive ? 'location' : undefined}
+                className={`text-sm font-medium tracking-wide transition-colors duration-300 ${
+                  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {l.label}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">
