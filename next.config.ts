@@ -30,8 +30,20 @@ const securityHeaders = [
       "font-src 'self'",
       "connect-src 'self' https://www.google-analytics.com",
       "frame-ancestors 'none'",
+      // Send violation reports to our endpoint (legacy report-uri + newer report-to).
+      // Disabled in dev so we don't get spammed while iterating.
+      ...(isDev ? [] : ['report-uri /api/csp-report', 'report-to csp-endpoint']),
     ].join('; '),
   },
+  // Reporting API endpoint group (used by report-to above).
+  ...(isDev
+    ? []
+    : [
+        {
+          key: 'Reporting-Endpoints',
+          value: 'csp-endpoint="/api/csp-report"',
+        },
+      ]),
   // Performance hints
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
 ];
