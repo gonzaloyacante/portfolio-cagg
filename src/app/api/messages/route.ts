@@ -1,10 +1,26 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
+import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { getResend } from '@/lib/resend';
 import { contactMessageSchema } from '@/validations/message';
 
 export async function POST(req: Request) {
+  // Per-IP rate limit. 5 requests / 10 min with a 2-request burst.
+  // Returns 429 (with Retry-After) on the limit being hit.
+  const limit = rateLimit(`messages:${clientKey(req)}`);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil(limit.retryAfterMs / 1000).toString(),
+        },
+      }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = contactMessageSchema.safeParse(body);
   if (!parsed.success) {
@@ -16,6 +32,8 @@ export async function POST(req: Request) {
 
   const { name, email, phone, message, website } = parsed.data;
 
+  // Honeypot: bots fill the hidden `website` field, real users don't.
+  // Return success so the bot's script doesn't retry or report failure.
   if (website !== undefined && website !== '') {
     return NextResponse.json({ success: true });
   }
