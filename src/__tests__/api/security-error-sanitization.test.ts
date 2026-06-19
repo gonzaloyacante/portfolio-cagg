@@ -336,14 +336,13 @@ describe('security: contact form HTML email injection (XSS via email body)', () 
    * user-controlled `name`, `email`, and `message`. If any of those
    * contain HTML, the email body is HTML-injected.
    *
-   * Today the values are NOT escaped. This is a known limitation:
-   * - Only admins receive the email (via Resend)
-   * - Admins viewing the email in a webmail client could be XSSed
-   *
-   * These tests document the current behavior. A future fix would
-   * replace the string interpolation with a proper HTML escape helper.
+   * The route now escapes all four user-controlled fields via
+   * `escapeHtml` before injecting them. A payload like
+   * `<script>alert(1)</script>` reaches the email body as
+   * `&lt;script&gt;alert(1)&lt;/script&gt;` and is therefore inert
+   * in any webmail client.
    */
-  it('name containing <script> is embedded raw in the email body (documented behavior)', async () => {
+  it('name containing <script> is escaped, not embedded raw', async () => {
     const resendSend = vi.fn().mockResolvedValue({ id: 'email-1' });
     getResend.mockReturnValue({ emails: { send: resendSend } });
     prismaMock.setting.findMany.mockResolvedValue([
@@ -366,13 +365,13 @@ describe('security: contact form HTML email injection (XSS via email body)', () 
     expect(res.status).toBe(200);
     expect(resendSend).toHaveBeenCalled();
     const html = resendSend.mock.calls[0][0].html as string;
-    // DOCUMENTED: name is interpolated raw. This is the bug.
-    expect(html).toContain('<script>alert("xss")</script>');
-    // The fix: an escape function. Until then, the admin is at risk
-    // when viewing emails in a webmail client.
+    // The raw payload must not be present in the body.
+    expect(html).not.toContain('<script>alert("xss")</script>');
+    // It must be present in its escaped form.
+    expect(html).toContain('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
   });
 
-  it('email with HTML is embedded raw in the email body (documented behavior)', async () => {
+  it('message containing <img onerror=...> is escaped, not embedded raw', async () => {
     const resendSend = vi.fn().mockResolvedValue({ id: 'email-1' });
     getResend.mockReturnValue({ emails: { send: resendSend } });
     prismaMock.setting.findMany.mockResolvedValue([
@@ -394,8 +393,8 @@ describe('security: contact form HTML email injection (XSS via email body)', () 
     const res = await messagesPOST(req);
     expect(res.status).toBe(200);
     const html = resendSend.mock.calls[0][0].html as string;
-    // DOCUMENTED: message is interpolated raw. This is the bug.
-    expect(html).toContain('<img src=x onerror=alert(1) />');
+    expect(html).not.toContain('<img src=x onerror=alert(1) />');
+    expect(html).toContain('&lt;img src=x onerror=alert(1) /&gt;');
   });
 });
 

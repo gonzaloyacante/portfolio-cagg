@@ -35,10 +35,14 @@ describe('/api/messages POST', () => {
     prisma.contactMessage.create.mockResolvedValue({ id: '1' });
     prisma.setting.findMany.mockResolvedValue([]);
     rateLimit.mockReturnValue({ ok: true, retryAfterMs: 0 });
+    // The route reads these env vars to decide whether to call
+    // Resend. Tests that exercise the email body need both set.
+    process.env.RESEND_FROM_EMAIL = 'noreply@example.com';
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete process.env.RESEND_FROM_EMAIL;
   });
 
   describe('rate limit', () => {
@@ -236,6 +240,109 @@ describe('/api/messages POST', () => {
       });
       const res = await POST(req);
       expect(res.status).toBe(200);
+    });
+  });
+
+  describe('email body HTML escaping (XSS defense)', () => {
+    /**
+     * The notification email body is rendered by webmail clients.
+     * User-controlled fields (name, email, phone, message) are
+     * interpolated into HTML. Without escaping, a payload like
+     * `<img src=x onerror=...>` executes in the admin's webmail
+     * context. The route MUST escape all four fields before
+     * interpolating them. Newlines in the message body are converted
+     * to <br/> tags AFTER escaping (so the literal `<br/>` markup
+     * survives).
+     */
+    async function sendAndGetHtml(body: unknown): Promise<{ subject: string; html: string }> {
+      // sendMock must return a thenable — the route chains `.catch()`
+      // on the result.
+      const sendMock = vi.fn().mockResolvedValue({ id: 'sent' });
+      getResend.mockReturnValue({ emails: { send: sendMock } });
+      prisma.setting.findMany.mockResolvedValue([
+        { key: 'notification_email', value: 'me@example.com' },
+        { key: 'notifications_enabled', value: 'true' },
+      ]);
+      const req = new Request('https://x.com/api/messages', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      await POST(req);
+      const call = sendMock.mock.calls[0]![0] as { subject: string; html: string };
+      return call;
+    }
+
+    it('escapes <script> payload in name field', async () => {
+      const sent = await sendAndGetHtml({
+        ...VALID_BODY,
+        name: '<script>alert(1)</script>',
+      });
+      expect(sent.subject).toContain('&lt;script&gt;');
+      expect(sent.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+      // The raw payload must NOT appear in the rendered body.
+      expect(sent.html).not.toContain('<script>alert(1)</script>');
+    });
+
+    it('escapes event handler attribute injection in name field', async () => {
+      const sent = await sendAndGetHtml({
+        ...VALID_BODY,
+        name: '"><img src=x onerror=alert(1)>',
+      });
+      expect(sent.html).not.toMatch(/<img/);
+      expect(sent.html).toContain('&quot;');
+    });
+
+    it('includes the email in the body (and escapes it on the way through)', async () => {
+      // The email field's Zod schema rejects angle brackets, so it
+      // cannot carry a live XSS payload. The route still routes it
+      // through escapeHtml, which is the defense-in-depth that
+      // matters if a future schema change loosens the constraint.
+      const sent = await sendAndGetHtml(VALID_BODY);
+      expect(sent.html).toContain(VALID_BODY.email);
+      // And `name` and `phone` payloads that DO smuggle brackets
+      // through are escaped in the same pass — covered by the other
+      // tests in this block.
+    });
+
+    it('escapes phone field', async () => {
+      // Must be ≤ 20 chars (schema constraint).
+      const sent = await sendAndGetHtml({
+        ...VALID_BODY,
+        phone: '+1<script>evil',
+      });
+      expect(sent.html).not.toContain('<script>evil');
+      expect(sent.html).toContain('&lt;script&gt;');
+    });
+
+    it('escapes message field but preserves <br/> for newlines', async () => {
+      const sent = await sendAndGetHtml({
+        ...VALID_BODY,
+        message: 'Line 1\nLine 2 <script>evil()</script>\nLine 3',
+      });
+      // The script tag must be escaped.
+      expect(sent.html).toContain('&lt;script&gt;evil()&lt;/script&gt;');
+      expect(sent.html).not.toContain('<script>evil()</script>');
+      // Newlines still converted to <br/>.
+      expect(sent.html).toContain('Line 1<br/>Line 2');
+      expect(sent.html).toContain('Line 3');
+    });
+
+    it('escapes javascript: URL inside message', async () => {
+      const sent = await sendAndGetHtml({
+        ...VALID_BODY,
+        message: 'Click <a href="javascript:alert(1)">here</a>',
+      });
+      // The href must not be a live javascript: URL after escaping.
+      expect(sent.html).not.toMatch(/href="javascript:/);
+      expect(sent.html).toContain('href=&quot;javascript:');
+    });
+
+    it('does not escape the static <strong>/<p>/<hr> markup we author', async () => {
+      const sent = await sendAndGetHtml(VALID_BODY);
+      // The static markup we control should be preserved verbatim.
+      expect(sent.html).toContain('<strong>Nombre:</strong>');
+      expect(sent.html).toContain('<strong>Email:</strong>');
+      expect(sent.html).toContain('<hr/>');
     });
   });
 });

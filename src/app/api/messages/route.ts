@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { escapeHtml } from '@/lib/escape-html';
 import { prisma } from '@/lib/prisma';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { getResend } from '@/lib/resend';
@@ -52,12 +53,22 @@ export async function POST(req: Request) {
 
   const resend = getResend();
   if (notificationsEnabled && toEmail && fromEmail && resend) {
+    // Escape user-controlled fields before injecting them into the
+    // HTML body. Otherwise a payload like `<img src=x onerror=...>`
+    // executes in the admin's webmail client when they open the
+    // notification. Newlines in `message` are converted to <br/>
+    // AFTER escaping so the <br/> tags are kept as markup rather
+    // than being escaped themselves.
     await resend.emails
       .send({
         from: fromEmail,
         to: toEmail,
-        subject: `Nuevo mensaje de ${name}`,
-        html: `<p><strong>Nombre:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p>${phone ? `<p><strong>Teléfono:</strong> ${phone}</p>` : ''}<hr/><p>${message.replace(/\n/g, '<br/>')}</p>`,
+        subject: `Nuevo mensaje de ${escapeHtml(name)}`,
+        html:
+          `<p><strong>Nombre:</strong> ${escapeHtml(name)}</p>` +
+          `<p><strong>Email:</strong> ${escapeHtml(email)}</p>` +
+          (phone ? `<p><strong>Teléfono:</strong> ${escapeHtml(phone)}</p>` : '') +
+          `<hr/><p>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>`,
       })
       .catch(() => null);
   }
