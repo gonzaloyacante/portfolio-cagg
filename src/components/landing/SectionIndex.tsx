@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useActiveSection } from '@/hooks/use-active-section';
 
 const SECTIONS = [
   { id: 'top', label: '00' },
@@ -16,25 +16,7 @@ const SECTIONS = [
 ] as const;
 
 export function SectionIndex() {
-  const [active, setActive] = useState<string>('top');
-
-  useEffect(() => {
-    const els = SECTIONS.map((s) => document.getElementById(s.id)).filter(
-      (el): el is HTMLElement => el !== null
-    );
-    if (!els.length) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActive(visible[0].target.id);
-      },
-      { rootMargin: '-40% 0px -55% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
+  const active = useActiveSection(SECTIONS.map((s) => s.id));
 
   return (
     <nav
@@ -49,6 +31,7 @@ export function SectionIndex() {
             key={s.id}
             href={`#${s.id}`}
             data-testid={`section-index-${s.id}`}
+            aria-current={isActive ? 'location' : undefined}
             className="group text-label tracking-label flex items-center gap-3 font-mono uppercase"
           >
             <span

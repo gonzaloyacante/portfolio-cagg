@@ -5,6 +5,7 @@ PLAN_MAESTRO.md
 scripts/
 docs/
 .logs/
+.claude/
 
 # ─── Variables de entorno ────────────────────────────────────────────────────
 .env

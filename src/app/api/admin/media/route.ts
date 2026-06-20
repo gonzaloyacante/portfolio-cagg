@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { withAdminAuth } from '@/lib/auth-guard';
 import { cloudinary } from '@/lib/cloudinary';
+import { isBufferConsistentWithMime } from '@/lib/magic-bytes';
 import { prisma } from '@/lib/prisma';
 
 const FOLDER = 'portfolio-cag';
@@ -38,6 +39,15 @@ export const POST = withAdminAuth(async (req) => {
     return NextResponse.json({ error: 'File exceeds 10 MB limit' }, { status: 413 });
   }
 
+  // Reject empty files with an explicit 400. The magic-byte check
+  // below would also reject them with 415, but "File contents do
+  // not match the declared file type" is misleading when the real
+  // problem is "no file at all". A dedicated check produces a
+  // clearer error message and a more semantically correct status.
+  if (file.size === 0) {
+    return NextResponse.json({ error: 'File is empty' }, { status: 400 });
+  }
+
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json({ error: 'Unsupported file type' }, { status: 415 });
@@ -45,6 +55,17 @@ export const POST = withAdminAuth(async (req) => {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
+
+  // Defense-in-depth: Content-Type is attacker-controlled. Verify the
+  // body actually matches the declared MIME before sending bytes to
+  // Cloudinary. See src/lib/magic-bytes.ts for the per-format check.
+  if (!isBufferConsistentWithMime(new Uint8Array(arrayBuffer), file.type)) {
+    return NextResponse.json(
+      { error: 'File contents do not match the declared file type' },
+      { status: 415 }
+    );
+  }
+
   const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
 
   let result: {

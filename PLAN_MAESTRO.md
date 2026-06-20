@@ -25,7 +25,7 @@ Proyecto legado: `/Users/gonzaloyacante/dev/portfolio-cag-legacy` (fuente de ver
 
 ### E0-T1 — Scaffold Next.js 16
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `chore/scaffold`
 - 🔒 Prerequisito: ninguno.
 
@@ -66,7 +66,7 @@ Criterio done: `pnpm dev` levanta sin errores. `pnpm build` compila.
 
 ### E0-T2 — Configurar ESLint + Prettier + Husky
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `chore/scaffold`
 - 🔒 Prerequisito: E0-T1 DONE.
 
@@ -150,7 +150,7 @@ git commit -m "chore(lint): configure eslint, prettier, husky"
 
 ### E0-T3 — Instalar dependencias del stack
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `chore/scaffold`
 - 🔒 Prerequisito: E0-T2 DONE.
 
@@ -231,7 +231,7 @@ git commit -m "chore(deps): install full stack dependencies"
 
 ### E0-T4 — Configurar next-intl
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `chore/scaffold`
 - 🔒 Prerequisito: E0-T3 DONE.
 
@@ -356,7 +356,7 @@ git commit -m "feat(i18n): configure next-intl with es/en routing"
 
 ### E0-T5 — Baseline de calidad
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `chore/scaffold`
 - 🔒 Prerequisito: E0-T4 DONE.
 
@@ -385,7 +385,7 @@ Criterio done: scaffold completo, dependencias instaladas, i18n configurado, bui
 
 ### E1-T1 — Schema Prisma (equivalente a models.py)
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/db-schema`
 - 🔒 Prerequisito: E0-T5 DONE.
 
@@ -705,7 +705,7 @@ git commit -m "chore(db): define prisma schema from models.py"
 
 ### E1-T2 — Singleton Prisma + conexión NeonDB
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/db-schema`
 - 🔒 Prerequisito: E1-T1 DONE.
 
@@ -763,7 +763,7 @@ git commit -m "feat(db): add prisma singleton with neon adapter"
 
 ### E1-T3 — Seed de datos iniciales
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/db-schema`
 - 🔒 Prerequisito: E1-T2 DONE.
 
@@ -858,7 +858,7 @@ git merge --no-ff feat/db-schema -m "Merge branch 'feat/db-schema' — EPIC 1 co
 
 ### E2-T1 — Better Auth setup
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/auth`
 - 🔒 Prerequisito: E1-T3 DONE.
 
@@ -963,7 +963,7 @@ git commit -m "feat(auth): setup better-auth with prisma adapter"
 
 ### E2-T2 — Login page + Admin layout guard
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/auth`
 - 🔒 Prerequisito: E2-T1 DONE.
 
@@ -1011,7 +1011,7 @@ git commit -m "feat(auth): add login page and admin layout guard"
 
 ### E2-T3 — TOTP 2FA management
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/auth`
 - 🔒 Prerequisito: E2-T2 DONE.
 
@@ -1038,7 +1038,7 @@ git merge --no-ff feat/auth -m "Merge branch 'feat/auth' — EPIC 2 completado"
 
 ### E3-T1 — Content routes (GET público)
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/api-routes`
 - 🔒 Prerequisito: E2-T3 DONE.
 
@@ -1050,7 +1050,7 @@ Equivalente al `content_router.py` del legado.
 
 ### E3-T2 — Admin CRUD routes (protegidos)
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/api-routes`
 - 🔒 Prerequisito: E3-T1 DONE.
 
@@ -1062,7 +1062,7 @@ Verificar sesión en cada handler con `auth.api.getSession()`.
 
 ### E3-T3 — Messages + Analytics + SEO routes
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/api-routes`
 - 🔒 Prerequisito: E3-T2 DONE.
 
@@ -1087,7 +1087,7 @@ git merge --no-ff feat/api-routes -m "Merge branch 'feat/api-routes' — EPIC 3 
 
 ### E4-T1 — Layout + providers + Axios config
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E3-T3 DONE.
 
@@ -1098,7 +1098,7 @@ Crear `src/app/[locale]/layout.tsx` con NextIntlClientProvider.
 
 ### E4-T2 — Componentes Hero + Header + BrandsMarquee
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E4-T1 DONE.
 
@@ -1114,7 +1114,7 @@ Reemplazar strings hardcodeados por `useTranslations()`.
 
 ### E4-T3 — Experience + Process + Services
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E4-T2 DONE.
 
@@ -1124,7 +1124,7 @@ Migrar: `Experience.jsx`, `Process.jsx`, `Services.jsx`
 
 ### E4-T4 — Projects + Results + Testimonials
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E4-T3 DONE.
 
@@ -1134,7 +1134,7 @@ Migrar: `Projects.jsx`, `Results.jsx`, `Testimonials.jsx`
 
 ### E4-T5 — Timeline + FAQ + Contact + Footer + StickyWhatsApp
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E4-T4 DONE.
 
@@ -1144,7 +1144,7 @@ Migrar: `Timeline.jsx`, `FAQ.jsx`, `Contact.jsx`, `Footer.jsx`, `StickyWhatsApp.
 
 ### E4-T6 — Landing page principal (ISR)
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/landing`
 - 🔒 Prerequisito: E4-T5 DONE.
 
@@ -1167,7 +1167,7 @@ git merge --no-ff feat/landing -m "Merge branch 'feat/landing' — EPIC 4 comple
 
 ### E5-T1 — AdminShell (layout + sidebar)
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/admin`
 - 🔒 Prerequisito: E4-T6 DONE.
 
@@ -1210,7 +1210,7 @@ git merge --no-ff feat/admin -m "Merge branch 'feat/admin' — EPIC 5 completado
 
 ### E6-T1 — Cloudinary config + upload API
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/media`
 - 🔒 Prerequisito: E5-T12 DONE.
 
@@ -1239,7 +1239,7 @@ Archivo: `src/app/api/admin/media/route.ts`
 
 ### E6-T2 — Media browser component
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/media`
 - 🔒 Prerequisito: E6-T1 DONE.
 
@@ -1258,7 +1258,7 @@ git merge --no-ff feat/media -m "Merge branch 'feat/media' — EPIC 6 completado
 
 ### E7-T1 — Metadata dinámica + sitemap
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/seo`
 - 🔒 Prerequisito: E6-T2 DONE.
 
@@ -1270,7 +1270,7 @@ git merge --no-ff feat/media -m "Merge branch 'feat/media' — EPIC 6 completado
 
 ### E7-T2 — GA4 + tracking propio
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho
 - Branch: `feat/seo`
 - 🔒 Prerequisito: E7-T1 DONE.
 
@@ -1290,7 +1290,7 @@ git merge --no-ff feat/seo -m "Merge branch 'feat/seo' — EPIC 7 completado"
 
 ### E8-T1 — Vitest setup + tests
 
-- Estado: ⬜ Pendiente
+- Estado: 🟡 Parcial — Vitest + 3 archivos (message-schema, rate-limit, content-structure, 19 tests). Falta cubrir admin CRUD, login/TOTP y utils de formato.
 - Branch: `feat/deploy`
 - 🔒 Prerequisito: E7-T2 DONE.
 
@@ -1303,7 +1303,7 @@ Configurar Vitest. Tests mínimos obligatorios:
 
 ### E8-T2 — Vercel deploy + variables de entorno
 
-- Estado: ⬜ Pendiente
+- Estado: ✅ Hecho — proyecto `portfolio-cag` en Vercel, 5+ deploys de prod Ready, alias `cagg.vercel.app` y `dev-cagg.vercel.app`, todas las env vars cargadas (Neon `POSTGRES_*`, Cloudinary, Resend, GA4, Better Auth, Admin). 4 deploys de prod fallaron hace ~21h (Prisma postinstall, ya resuelto).
 - Branch: `feat/deploy`
 - 🔒 Prerequisito: E8-T1 DONE.
 

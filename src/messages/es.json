@@ -99,6 +99,22 @@
       "wa_prefix": "Hola Carlos, le escribo desde su sitio web."
     }
   },
+  "errors": {
+    "notFound": {
+      "code": "404",
+      "title": "Página no encontrada",
+      "description": "La sección que buscás no existe o se movió. Volvé al inicio y navegá desde el menú.",
+      "home": "Ir al inicio",
+      "contact": "Ir a contacto"
+    },
+    "server": {
+      "code": "ERROR",
+      "title": "No pudimos cargar la página",
+      "description": "Ocurrió un error inesperado. Reintentá en unos segundos. Si persiste, mandame un email a través del formulario de contacto.",
+      "retry": "Reintentar",
+      "home": "Ir al inicio"
+    }
+  },
   "footer": {
     "role": "Ingeniero Electrónico de Control Industrial",
     "rights": "Todos los derechos reservados.",

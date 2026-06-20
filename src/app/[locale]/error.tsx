@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
@@ -11,6 +12,9 @@ type ErrorProps = {
 };
 
 export default function LocaleError({ error, reset }: ErrorProps) {
+  const t = useTranslations('errors.server');
+  const locale = useLocale();
+
   useEffect(() => {
     console.error('[landing error]', error);
   }, [error]);
@@ -27,19 +31,16 @@ export default function LocaleError({ error, reset }: ErrorProps) {
             <AlertTriangle size={15} />
           </div>
           <p className="text-muted-foreground/80 font-mono text-[10px] tracking-[0.18em] uppercase">
-            Error del servidor
+            {t('code')}
           </p>
         </div>
         <h1 className="text-foreground relative text-2xl font-semibold tracking-tight">
-          No pudimos cargar la página
+          {t('title')}
         </h1>
-        <p className="text-muted-foreground relative text-sm leading-relaxed">
-          Ocurrió un error inesperado. Reintentá en unos segundos. Si persiste, mandame un email a
-          través del formulario de contacto.
-        </p>
+        <p className="text-muted-foreground relative text-sm leading-relaxed">{t('description')}</p>
         {error.digest && (
           <p className="text-muted-foreground/50 relative font-mono text-[10px] tracking-wider uppercase">
-            Código · {error.digest}
+            · {error.digest}
           </p>
         )}
         <div className="relative flex flex-wrap justify-center gap-2 pt-2">
@@ -49,14 +50,14 @@ export default function LocaleError({ error, reset }: ErrorProps) {
             className="bg-foreground text-background hover:bg-foreground/90 inline-flex items-center gap-1.5 rounded-[var(--admin-radius)] px-4 py-2 text-sm font-semibold transition-colors"
           >
             <RefreshCw size={13} />
-            Reintentar
+            {t('retry')}
           </button>
           <Link
-            href="/es"
+            href={`/${locale}`}
             className="border-border bg-background text-foreground hover:bg-muted inline-flex items-center gap-1.5 rounded-[var(--admin-radius)] border px-4 py-2 text-sm font-semibold transition-colors"
           >
             <Home size={13} />
-            Ir al inicio
+            {t('home')}
           </Link>
         </div>
       </div>

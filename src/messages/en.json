@@ -99,6 +99,22 @@
       "wa_prefix": "Hi Carlos, I'm reaching out from your website."
     }
   },
+  "errors": {
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The section you're looking for doesn't exist or has moved. Head back to the home page and use the menu to navigate.",
+      "home": "Back to home",
+      "contact": "Go to contact"
+    },
+    "server": {
+      "code": "ERROR",
+      "title": "We couldn't load the page",
+      "description": "An unexpected error occurred. Please try again in a few seconds. If it persists, send me an email through the contact form.",
+      "retry": "Try again",
+      "home": "Back to home"
+    }
+  },
   "footer": {
     "role": "Industrial Control Electronic Engineer",
     "rights": "All rights reserved.",

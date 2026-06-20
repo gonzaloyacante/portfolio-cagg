@@ -1,7 +1,9 @@
 # AGENTS.md — portfolio-cag
 
-> Última actualización: 2026-05-12
-> Estado del plan: EPIC 0 ⏳ (pendiente scaffold)
+> Última actualización: 2026-06-18
+> Estado del plan: EPIC 0–7 ✅, EPIC 8 🟡 (deploy hecho, tests parciales)
+> Producción: `https://cagg.vercel.app` (alias: `dev-cagg.vercel.app`)
+> 63 commits en `develop`, último deploy Ready hace ~19h.
 
 ---
 
@@ -296,15 +298,15 @@ pnpm test          # Todos los tests pasan
 
 | EPIC | Nombre | Estado |
 |------|--------|--------|
-| 0 | Setup + Scaffold | ⬜ |
-| 1 | DB Schema + Prisma | ⬜ |
-| 2 | Auth (Better Auth + TOTP) | ⬜ |
-| 3 | API Routes | ⬜ |
-| 4 | Landing pública | ⬜ |
-| 5 | Admin panel | ⬜ |
-| 6 | Media + Cloudinary | ⬜ |
-| 7 | SEO + Analytics | ⬜ |
-| 8 | Testing + Deploy | ⬜ |
+| 0 | Setup + Scaffold | ✅ |
+| 1 | DB Schema + Prisma | ✅ |
+| 2 | Auth (Better Auth + TOTP) | ✅ |
+| 3 | API Routes | ✅ |
+| 4 | Landing pública | ✅ |
+| 5 | Admin panel | ✅ |
+| 6 | Media + Cloudinary | ✅ |
+| 7 | SEO + Analytics | ✅ |
+| 8 | Testing + Deploy | 🟡 (deploy ✅, tests 3/19 — falta cubrir admin CRUD y utils) |
 
 ---
 
