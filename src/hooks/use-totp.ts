@@ -11,7 +11,10 @@ export function useTotp() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<TotpData>({ resolver: zodResolver(totpSchema) });
+  const form = useForm<TotpData>({
+    resolver: zodResolver(totpSchema),
+    mode: 'onTouched',
+  });
 
   const onSubmit = form.handleSubmit(async ({ code }) => {
     form.clearErrors();

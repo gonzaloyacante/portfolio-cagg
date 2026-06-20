@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useLogin } from '@/hooks/use-login';
 
 export default function LoginForm() {
@@ -57,8 +58,7 @@ export default function LoginForm() {
                 </FormLabel>
               </div>
               <FormControl>
-                <Input
-                  type="password"
+                <PasswordInput
                   autoComplete="current-password"
                   placeholder="••••••••"
                   className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"

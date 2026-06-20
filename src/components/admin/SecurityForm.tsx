@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useSecurity } from '@/hooks/use-security';
 import { cn } from '@/lib/utils';
 
@@ -135,8 +136,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                         Contraseña actual
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
+                        <PasswordInput
                           autoComplete="current-password"
                           autoFocus
                           placeholder="••••••••"
@@ -290,8 +290,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                         Contraseña actual
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
+                        <PasswordInput
                           autoComplete="current-password"
                           autoFocus
                           placeholder="••••••••"

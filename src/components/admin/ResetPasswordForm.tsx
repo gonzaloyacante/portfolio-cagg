@@ -11,7 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useResetPassword } from '@/hooks/use-reset-password';
 
 interface Props {
@@ -54,8 +54,7 @@ export default function ResetPasswordForm({ token }: Props) {
                 </FormLabel>
               </div>
               <FormControl>
-                <Input
-                  type="password"
+                <PasswordInput
                   autoComplete="new-password"
                   autoFocus
                   placeholder="••••••••"
@@ -77,8 +76,7 @@ export default function ResetPasswordForm({ token }: Props) {
                 Confirmar contraseña
               </FormLabel>
               <FormControl>
-                <Input
-                  type="password"
+                <PasswordInput
                   autoComplete="new-password"
                   placeholder="••••••••"
                   className="admin-focus-ring border-border bg-background/40 h-11 rounded-[var(--admin-radius)]"
