@@ -62,12 +62,12 @@ describe('auth.ts (better-auth config)', () => {
       session?: { cookieCache?: { enabled?: boolean; maxAge?: number } };
     };
     expect(config?.session?.cookieCache?.enabled).toBe(true);
-    expect(config?.session?.cookieCache?.maxAge).toBe(60 * 60 * 24 * 7);
+    expect(config?.session?.cookieCache?.maxAge).toBe(5 * 60);
   });
 
-  it('7 days in seconds is exactly 604800', () => {
+  it('5 minutes in seconds is exactly 300', () => {
     const call = (betterAuth as unknown as { mock: { calls: unknown[][] } }).mock.calls[0];
     const config = call?.[0] as { session?: { cookieCache?: { maxAge?: number } } };
-    expect(config?.session?.cookieCache?.maxAge).toBe(604_800);
+    expect(config?.session?.cookieCache?.maxAge).toBe(300);
   });
 });

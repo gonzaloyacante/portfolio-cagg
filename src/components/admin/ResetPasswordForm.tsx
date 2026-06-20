@@ -91,7 +91,9 @@ export default function ResetPasswordForm({ token }: Props) {
         />
 
         {form.formState.errors.root && (
-          <p className="text-destructive text-xs">{form.formState.errors.root.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.root.message}
+          </p>
         )}
 
         <Button type="submit" disabled={loading} className="admin-glow w-full gap-1.5" size="lg">

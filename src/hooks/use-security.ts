@@ -13,7 +13,7 @@ import {
   type VerifyTotpSetupData,
 } from '@/validations/security';
 
-type Step = 'idle' | 'enabling' | 'qr' | 'disabling';
+type Step = 'idle' | 'enabling' | 'qr' | 'codes' | 'disabling';
 
 interface TotpSetupData {
   totpURI: string;
@@ -59,7 +59,18 @@ export function useSecurity(initialEnabled: boolean) {
       if (error) {
         enableForm.setError('root', { message: 'Contraseña incorrecta.' });
       } else if (data) {
-        const secret = new URL(data.totpURI).searchParams.get('secret') ?? '';
+        let secret = '';
+        try {
+          secret = new URL(data.totpURI).searchParams.get('secret') ?? '';
+        } catch {
+          // totpURI is malformed; surface a clear error rather than
+          // letting the SecurityForm render an empty secret.
+          enableForm.setError('root', {
+            message: 'Respuesta inválida del servidor. Reintentá en unos segundos.',
+          });
+          setLoading(false);
+          return;
+        }
         setTotpSetup({ totpURI: data.totpURI, secret, backupCodes: data.backupCodes });
         setStep('qr');
       }
@@ -79,8 +90,9 @@ export function useSecurity(initialEnabled: boolean) {
         verifyForm.setError('code', { message: 'Código incorrecto o expirado.' });
       } else {
         setEnabled(true);
-        setTotpSetup(null);
-        setStep('idle');
+        // Keep totpSetup around so the admin can see their backup codes.
+        // They explicitly acknowledge the codes before returning to idle.
+        setStep('codes');
         verifyForm.reset();
       }
     } catch {
@@ -89,6 +101,11 @@ export function useSecurity(initialEnabled: boolean) {
       setLoading(false);
     }
   });
+
+  const acknowledgeBackupCodes = () => {
+    setTotpSetup(null);
+    setStep('idle');
+  };
 
   const submitDisable = disableForm.handleSubmit(async ({ password }) => {
     disableForm.clearErrors();
@@ -123,5 +140,6 @@ export function useSecurity(initialEnabled: boolean) {
     submitEnable,
     submitVerify,
     submitDisable,
+    acknowledgeBackupCodes,
   };
 }

@@ -17,17 +17,18 @@ export function useLogin() {
     form.clearErrors();
     setLoading(true);
     try {
-      const { error } = await authClient.signIn.email({ email, password, callbackURL: '/admin' });
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: '/admin',
+      });
       if (error) {
-        const code = (error as { code?: string }).code;
-        if (code === 'TWO_FACTOR_REQUIRED') {
-          // `authClient.signIn.email` does not trigger the plugin's
-          // `onTwoFactorRedirect` callback — only `authClient.signIn`
-          // does. Redirect explicitly so the TOTP form is shown.
-          router.replace('/admin/login?step=2fa');
-          return;
-        }
+        // The twoFactor plugin returns the redirect signal on the
+        // success path (`data.twoFactorRedirect`), not as an error code.
+        // See Better-Auth client plugin docs.
         form.setError('root', { message: 'Credenciales inválidas.' });
+      } else if (data && (data as { twoFactorRedirect?: boolean }).twoFactorRedirect) {
+        router.replace('/admin/login?step=2fa');
       } else {
         router.replace('/admin');
         router.refresh();

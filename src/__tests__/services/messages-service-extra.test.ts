@@ -20,7 +20,6 @@ describe('messagesService — extra density', () => {
         name: `u${i}`,
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       });
     }
     expect(axiosInstance.post).toHaveBeenCalledTimes(10);
@@ -33,7 +32,6 @@ describe('messagesService — extra density', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     expect(r).toEqual(response);
   });
@@ -45,7 +43,6 @@ describe('messagesService — extra density', () => {
       email: 'a@b.co',
       phone: '+54 9 11 5555 5555',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     expect(axiosInstance.post.mock.calls[0]?.[1]).toHaveProperty('phone', '+54 9 11 5555 5555');
   });
@@ -56,7 +53,6 @@ describe('messagesService — extra density', () => {
       name: '王小明',
       email: 'wang@example.com',
       message: 'Hello',
-      locale: 'zh',
     });
     const call = axiosInstance.post.mock.calls[0];
     expect(call?.[0]).toBe('/api/messages');
@@ -68,7 +64,6 @@ describe('messagesService — extra density', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'a'.repeat(2000),
-      locale: 'es',
     });
     const call = axiosInstance.post.mock.calls[0]?.[1] as { message: string };
     expect(call.message.length).toBe(2000);
@@ -80,7 +75,6 @@ describe('messagesService — extra density', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     const call = axiosInstance.post.mock.calls[0]?.[1] as Record<string, unknown>;
     expect('phone' in call ? call.phone : undefined).toBeUndefined();
@@ -93,7 +87,6 @@ describe('messagesService — extra density', () => {
         name: 'a',
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       })
     ).rejects.toThrow('429');
   });
@@ -105,7 +98,6 @@ describe('messagesService — extra density', () => {
         name: 'a',
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       })
     ).rejects.toThrow('422');
   });
@@ -117,7 +109,6 @@ describe('messagesService — extra density', () => {
         name: 'a',
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       })
     ).rejects.toThrow('500');
   });
@@ -128,13 +119,11 @@ describe('messagesService — extra density', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     await messagesService.submit({
       name: 'b',
       email: 'b@c.co',
       message: 'y'.repeat(10),
-      locale: 'en',
     });
     const calls = axiosInstance.post.mock.calls;
     expect(calls[0]?.[0]).toBe('/api/messages');

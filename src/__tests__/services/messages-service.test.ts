@@ -23,7 +23,6 @@ describe('messagesService.submit', () => {
       email: 'carlos@example.com',
       phone: '+54 9 11 5555 5555',
       message: 'Hola',
-      locale: 'es',
     };
     await messagesService.submit(payload);
     expect(mockedPost).toHaveBeenCalledWith('/api/messages', payload);
@@ -36,7 +35,6 @@ describe('messagesService.submit', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     expect(result).toBe(expected);
   });
@@ -49,7 +47,6 @@ describe('messagesService.submit', () => {
         name: 'a',
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       })
     ).rejects.toBe(err);
   });
@@ -60,18 +57,25 @@ describe('messagesService.submit', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'en',
     });
     const call = mockedPost.mock.calls[0];
     expect(call?.[1]).not.toHaveProperty('phone');
   });
 
-  it.each(['es', 'en', 'pt', 'fr', ''])('forwards locale %s', async (locale) => {
-    mockedPost.mockResolvedValueOnce({ data: { ok: true } });
-    await messagesService.submit({ name: 'a', email: 'a@b.co', message: 'x'.repeat(10), locale });
-    const call = mockedPost.mock.calls[0] as unknown as [string, { locale: string }];
-    expect(call?.[1]?.locale).toBe(locale);
-  });
+  it.each(['es', 'en', 'pt', 'fr', ''])(
+    'forwards honeypot locale string %s without error',
+    async (locale) => {
+      mockedPost.mockResolvedValueOnce({ data: { ok: true } });
+      await messagesService.submit({
+        name: 'a',
+        email: 'a@b.co',
+        message: 'x'.repeat(10),
+        website: locale,
+      });
+      const call = mockedPost.mock.calls[0] as unknown as [string, { website?: string }];
+      expect(call?.[1]?.website).toBe(locale);
+    }
+  );
 
   it('does not transform the response', async () => {
     const expected = { data: { ok: false, extra: 'info' } };
@@ -80,7 +84,6 @@ describe('messagesService.submit', () => {
       name: 'a',
       email: 'a@b.co',
       message: 'x'.repeat(10),
-      locale: 'es',
     });
     expect(result).toEqual(expected);
   });
@@ -92,7 +95,6 @@ describe('messagesService.submit', () => {
         name: `u${i}`,
         email: 'a@b.co',
         message: 'x'.repeat(10),
-        locale: 'es',
       });
     }
     expect(mockedPost).toHaveBeenCalledTimes(5);

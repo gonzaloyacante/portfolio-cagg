@@ -3,7 +3,14 @@
 import { ArrowRight, KeyRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useTotp } from '@/hooks/use-totp';
 
@@ -31,13 +38,18 @@ export default function TotpForm() {
           name="code"
           render={({ field }) => (
             <FormItem>
+              <FormLabel className="font-mono text-[10px] tracking-[0.18em] uppercase">
+                Código de 6 dígitos
+              </FormLabel>
               <FormControl>
                 <Input
                   type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={6}
                   autoFocus
                   autoComplete="one-time-code"
+                  aria-label="Código de verificación de 6 dígitos"
                   placeholder="000000"
                   className="border-border bg-background/40 h-14 rounded-[var(--admin-radius)] text-center font-mono text-2xl tracking-[0.5em]"
                   {...field}
@@ -47,6 +59,12 @@ export default function TotpForm() {
             </FormItem>
           )}
         />
+
+        {form.formState.errors.root && (
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.root.message}
+          </p>
+        )}
 
         <Button type="submit" disabled={loading} size="lg" className="admin-glow w-full gap-1.5">
           {loading ? 'Verificando…' : 'Verificar código'}

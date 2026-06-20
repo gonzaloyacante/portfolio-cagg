@@ -5,7 +5,11 @@ export type MessagePayload = {
   email: string;
   phone?: string;
   message: string;
-  locale: string;
+  /**
+   * Honeypot field. Real users never see or fill this; bots auto-fill any
+   * input they find. The server returns 200/success without persisting.
+   */
+  website?: string;
 };
 
 export const messagesService = {
