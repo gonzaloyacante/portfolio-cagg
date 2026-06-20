@@ -76,6 +76,22 @@ export function BilingualFieldTabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, esValue, enValue, synced, syncable]);
 
+  const toggleSync = () => {
+    if (synced) {
+      setSynced(false);
+      return;
+    }
+    // If the two values already differ, confirm before the toggle
+    // overwrites the inactive language's content.
+    if (esValue && enValue && esValue !== enValue) {
+      const confirmed = window.confirm(
+        'Activar sincronización va a sobrescribir el contenido del idioma inactivo. ¿Continuar?'
+      );
+      if (!confirmed) return;
+    }
+    setSynced(true);
+  };
+
   return (
     <div className="admin-hairline bg-card/40 rounded-[var(--admin-radius-lg)] p-4 sm:p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -96,8 +112,9 @@ export function BilingualFieldTabs({
               type="button"
               variant="ghost"
               size="xs"
-              onClick={() => setSynced((s) => !s)}
+              onClick={toggleSync}
               data-testid={`bilingual-sync-${nameBase}`}
+              aria-pressed={synced}
               className={cn(
                 'gap-1.5 font-mono text-[10px] tracking-widest uppercase',
                 synced && 'bg-foreground/5 text-foreground'
@@ -110,13 +127,20 @@ export function BilingualFieldTabs({
         </div>
       </header>
 
-      <div className="border-border bg-muted/30 mb-4 inline-flex items-center gap-1 rounded-[var(--admin-radius)] border p-1">
+      <div
+        role="tablist"
+        aria-label={`Selector de idioma para ${label}`}
+        className="border-border bg-muted/30 mb-4 inline-flex items-center gap-1 rounded-[var(--admin-radius)] border p-1"
+      >
         {(['Es', 'En'] as const).map((lang) => {
           const isActive = active === lang;
           return (
             <button
               key={lang}
               type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`${idBase}-panel`}
               onClick={() => setActive(lang)}
               data-testid={`bilingual-tab-${nameBase}-${lang}`}
               className={cn(
@@ -136,7 +160,7 @@ export function BilingualFieldTabs({
         })}
       </div>
 
-      <div className="grid gap-4">
+      <div id={`${idBase}-panel`} role="tabpanel" className="grid gap-4">
         {(['Es', 'En'] as const).map((lang) => {
           const isActive = active === lang;
           const isEs = lang === 'Es';
@@ -149,6 +173,8 @@ export function BilingualFieldTabs({
           return (
             <div
               key={lang}
+              role="tabpanel"
+              aria-hidden={!isActive}
               className={cn(
                 'space-y-2 transition-opacity duration-200',
                 isActive ? 'opacity-100' : 'hidden opacity-0'

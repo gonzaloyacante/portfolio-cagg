@@ -1,6 +1,9 @@
 'use client';
 
-import { ArrowRight, Check, KeyRound, ShieldAlert, ShieldCheck, X } from 'lucide-react';
+import { useState } from 'react';
+
+import { ArrowRight, Check, Copy, KeyRound, ShieldAlert, ShieldCheck, X } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 import { FieldHelp, SectionHelp } from '@/components/admin/FieldHelp';
 import { Button } from '@/components/ui/button';
@@ -35,6 +38,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
     submitEnable,
     submitVerify,
     submitDisable,
+    acknowledgeBackupCodes,
   } = useSecurity(twoFactorEnabled);
 
   return (
@@ -145,7 +149,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                   )}
                 />
                 {enableForm.formState.errors.root && (
-                  <p className="text-destructive text-xs">
+                  <p className="text-destructive text-xs" role="alert">
                     {enableForm.formState.errors.root.message}
                   </p>
                 )}
@@ -173,31 +177,43 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                     </div>
                     <div>
                       <p className="text-foreground text-sm font-semibold tracking-tight">
-                        Paso 2 de 2: Configurá tu app y verificá
+                        Paso 2 de 3: Configurá tu app y verificá
                       </p>
                       <p className="text-muted-foreground text-xs">
-                        Escaneá el código QR o ingresá la clave secreta en 1Password, Authy o Google
-                        Authenticator. Después ingresá el código de 6 dígitos que te muestra la app.
+                        Escaneá el código QR con tu app de autenticación (Google Authenticator,
+                        1Password, Authy) o ingresá la clave secreta. Después escribí el código de 6
+                        dígitos que te muestra la app.
                       </p>
                     </div>
                   </div>
-                  <div className="admin-hairline bg-background/40 space-y-3 rounded-[var(--admin-radius)] p-4">
-                    <div>
-                      <p className="text-muted-foreground/80 mb-1.5 font-mono text-[10px] tracking-[0.18em] uppercase">
-                        Clave secreta (manual setup)
-                      </p>
-                      <code className="text-foreground bg-foreground/5 block rounded-md px-2.5 py-2 font-mono text-sm break-all select-all">
-                        {totpSetup.secret}
-                      </code>
+                  <div className="admin-hairline bg-background/40 grid gap-4 rounded-[var(--admin-radius)] p-4 sm:grid-cols-[auto_1fr]">
+                    <div className="flex justify-center">
+                      <div className="rounded-md bg-white p-3" aria-hidden="true">
+                        <QRCodeSVG value={totpSetup.totpURI} size={160} level="M" />
+                      </div>
+                      <span className="sr-only">
+                        Código QR que contiene la clave secreta para tu app de autenticación.
+                      </span>
                     </div>
-                    <div>
-                      <a
-                        href={totpSetup.totpURI}
-                        className="text-foreground hover:text-foreground/80 inline-flex items-center gap-1.5 text-xs font-medium underline underline-offset-4 transition-colors"
-                      >
-                        Abrir en app de autenticación
-                        <ArrowRight size={11} />
-                      </a>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-muted-foreground/80 mb-1.5 font-mono text-[10px] tracking-[0.18em] uppercase">
+                          Clave secreta (manual setup)
+                        </p>
+                        <code className="text-foreground bg-foreground/5 block rounded-md px-2.5 py-2 font-mono text-sm break-all select-all">
+                          {totpSetup.secret}
+                        </code>
+                      </div>
+                      <div>
+                        <a
+                          href={totpSetup.totpURI}
+                          className="text-foreground hover:text-foreground/80 inline-flex items-center gap-1.5 text-xs font-medium underline underline-offset-4 transition-colors"
+                          aria-label="Abrir esta clave en tu app de autenticación"
+                        >
+                          Abrir en app de autenticación
+                          <ArrowRight size={11} />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -214,6 +230,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                         <Input
                           type="text"
                           inputMode="numeric"
+                          pattern="[0-9]*"
                           maxLength={6}
                           autoFocus
                           autoComplete="one-time-code"
@@ -239,6 +256,13 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                 </div>
               </form>
             </Form>
+          )}
+
+          {step === 'codes' && totpSetup && (
+            <BackupCodesStep
+              backupCodes={totpSetup.backupCodes}
+              onAcknowledge={acknowledgeBackupCodes}
+            />
           )}
 
           {step === 'disabling' && (
@@ -280,7 +304,7 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
                   )}
                 />
                 {disableForm.formState.errors.root && (
-                  <p className="text-destructive text-xs">
+                  <p className="text-destructive text-xs" role="alert">
                     {disableForm.formState.errors.root.message}
                   </p>
                 )}
@@ -302,6 +326,82 @@ export default function SecurityForm({ twoFactorEnabled }: Props) {
             </Form>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface BackupCodesStepProps {
+  backupCodes: string[];
+  onAcknowledge: () => void;
+}
+
+function BackupCodesStep({ backupCodes, onAcknowledge }: BackupCodesStepProps) {
+  const [copied, setCopied] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(backupCodes.join('\n'));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable (e.g. insecure context). User can still copy manually.
+    }
+  };
+
+  return (
+    <div className="space-y-5" role="region" aria-label="Códigos de respaldo">
+      <div className="flex items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-emerald-400/30 bg-emerald-400/10 text-emerald-400">
+          <ShieldCheck size={14} />
+        </div>
+        <div>
+          <p className="text-foreground text-sm font-semibold tracking-tight">
+            Paso 3 de 3: Guardá tus códigos de respaldo
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Estos códigos son tu única forma de entrar si perdés el teléfono. Guardalos en un lugar
+            seguro (gestor de contraseñas, impresión). Cada uno se usa una sola vez.
+          </p>
+        </div>
+      </div>
+
+      <ul
+        className="admin-hairline bg-background/40 grid grid-cols-2 gap-2 rounded-[var(--admin-radius)] p-4 font-mono text-sm sm:grid-cols-3"
+        aria-label="Lista de códigos de respaldo"
+      >
+        {backupCodes.map((code) => (
+          <li key={code} className="bg-foreground/5 rounded px-2 py-1.5 text-center select-all">
+            {code}
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Button type="button" variant="outline" size="sm" onClick={handleCopy} className="gap-1.5">
+          <Copy size={13} />
+          {copied ? '¡Copiado!' : 'Copiar todos'}
+        </Button>
+        <label className="text-foreground flex cursor-pointer items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={confirmed}
+            onChange={(e) => setConfirmed(e.target.checked)}
+            className="border-border h-4 w-4 rounded accent-emerald-400"
+            aria-describedby="backup-codes-confirm-desc"
+          />
+          <span id="backup-codes-confirm-desc">Guardé estos códigos en un lugar seguro.</span>
+        </label>
+        <Button
+          type="button"
+          onClick={onAcknowledge}
+          disabled={!confirmed}
+          className="admin-glow gap-1.5"
+        >
+          Finalizar
+          <ArrowRight size={13} />
+        </Button>
       </div>
     </div>
   );

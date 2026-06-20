@@ -71,7 +71,9 @@ export default function LoginForm() {
         />
 
         {form.formState.errors.root && (
-          <p className="text-destructive text-xs">{form.formState.errors.root.message}</p>
+          <p className="text-destructive text-xs" role="alert">
+            {form.formState.errors.root.message}
+          </p>
         )}
 
         <div className="flex items-center justify-between gap-2 pt-1">

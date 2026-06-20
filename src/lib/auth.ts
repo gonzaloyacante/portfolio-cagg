@@ -21,6 +21,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    // Revoke all active sessions when the password is reset, so an
+    // attacker who had a stolen cookie loses access immediately.
+    revokeSessionsOnPasswordReset: true,
+    minPasswordLength: 10,
   },
   plugins: [twoFactor()],
   advanced: {
@@ -36,9 +40,11 @@ export const auth = betterAuth({
     useSecureCookies: isProd,
   },
   session: {
+    // Shorter cache window so password resets / 2FA changes are reflected
+    // immediately on the client without waiting for the cache to expire.
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 5 * 60, // 5 minutes
     },
   },
 });
