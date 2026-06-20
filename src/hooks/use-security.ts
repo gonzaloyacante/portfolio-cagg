@@ -27,11 +27,18 @@ export function useSecurity(initialEnabled: boolean) {
   const [loading, setLoading] = useState(false);
   const [totpSetup, setTotpSetup] = useState<TotpSetupData | null>(null);
 
-  const enableForm = useForm<EnableTotpData>({ resolver: zodResolver(enableTotpSchema) });
+  const enableForm = useForm<EnableTotpData>({
+    resolver: zodResolver(enableTotpSchema),
+    mode: 'onTouched',
+  });
   const verifyForm = useForm<VerifyTotpSetupData>({
     resolver: zodResolver(verifyTotpSetupSchema),
+    mode: 'onTouched',
   });
-  const disableForm = useForm<DisableTotpData>({ resolver: zodResolver(disableTotpSchema) });
+  const disableForm = useForm<DisableTotpData>({
+    resolver: zodResolver(disableTotpSchema),
+    mode: 'onTouched',
+  });
 
   const startEnable = () => {
     enableForm.reset();

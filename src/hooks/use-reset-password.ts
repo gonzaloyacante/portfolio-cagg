@@ -22,7 +22,10 @@ export function useResetPassword(token: string) {
     return () => clearTimeout(timer);
   }, [done, router]);
 
-  const form = useForm<ResetPasswordData>({ resolver: zodResolver(resetPasswordSchema) });
+  const form = useForm<ResetPasswordData>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: 'onTouched',
+  });
 
   const onSubmit = form.handleSubmit(async ({ password }) => {
     form.clearErrors();

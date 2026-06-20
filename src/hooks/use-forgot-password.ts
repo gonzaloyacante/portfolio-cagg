@@ -10,7 +10,10 @@ export function useForgotPassword() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<ForgotPasswordData>({ resolver: zodResolver(forgotPasswordSchema) });
+  const form = useForm<ForgotPasswordData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: 'onTouched',
+  });
 
   const onSubmit = form.handleSubmit(async ({ email }) => {
     setLoading(true);

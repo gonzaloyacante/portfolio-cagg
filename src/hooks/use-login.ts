@@ -11,7 +11,10 @@ export function useLogin() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
+  const form = useForm<LoginData>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onTouched',
+  });
 
   const onSubmit = form.handleSubmit(async ({ email, password }) => {
     form.clearErrors();

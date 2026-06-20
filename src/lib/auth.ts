@@ -3,6 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { twoFactor } from 'better-auth/plugins';
 
 import { prisma } from './prisma';
+import { sendPasswordResetEmail } from './resend';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -25,6 +26,17 @@ export const auth = betterAuth({
     // attacker who had a stolen cookie loses access immediately.
     revokeSessionsOnPasswordReset: true,
     minPasswordLength: 10,
+    // Forward the password-reset email to Resend. Better-Auth defaults
+    // to a console.log if this is not set, which means prod silently
+    // never delivers the link.
+    sendResetPassword: async ({ user, url }) => {
+      const from = process.env.RESEND_FROM_EMAIL;
+      if (!from) {
+        console.error('[auth] RESEND_FROM_EMAIL not set; password reset email not sent');
+        return;
+      }
+      await sendPasswordResetEmail({ to: user.email, from, resetUrl: url });
+    },
   },
   plugins: [twoFactor()],
   advanced: {
