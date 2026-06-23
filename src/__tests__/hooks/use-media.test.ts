@@ -5,10 +5,15 @@ import { act, renderHook } from '@testing-library/react';
 
 import { useMedia } from '@/hooks/use-media';
 
-const { axiosInstance } = vi.hoisted(() => ({
+const { axiosInstance, isAxiosError } = vi.hoisted(() => ({
   axiosInstance: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
+  isAxiosError: vi.fn((e: unknown) => Boolean((e as { isAxiosError?: boolean })?.isAxiosError)),
 }));
 
+vi.mock('axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('axios')>();
+  return { ...actual, isAxiosError };
+});
 vi.mock('@/lib/axios', () => ({ default: axiosInstance }));
 
 const SAMPLE = {
@@ -213,6 +218,69 @@ describe('useMedia()', () => {
       const file = new File(['x'], 'test.jpg', { type: 'image/jpeg' });
       await result.current.upload(file);
       expect(axiosInstance.get).toHaveBeenCalledWith('/api/admin/media?page=1');
+    });
+
+    // The upload error handler has 4 branches based on
+    // (isAxiosError) && (response?.data?.error). Each must be exercised.
+    describe('error message extraction', () => {
+      const file = () => new File(['x'], 'test.jpg', { type: 'image/jpeg' });
+
+      it('uses server error string when AxiosError carries response.data.error', async () => {
+        axiosInstance.post.mockRejectedValueOnce({
+          isAxiosError: true,
+          response: { data: { error: 'Archivo demasiado grande' } },
+        });
+        const { result } = renderHook(() => useMedia());
+        await act(async () => {
+          await result.current.upload(file());
+        });
+        expect(result.current.error).toBe('Archivo demasiado grande');
+      });
+
+      it('falls back when AxiosError has no response (network failure)', async () => {
+        axiosInstance.post.mockRejectedValueOnce({
+          isAxiosError: true,
+          message: 'Network Error',
+        });
+        const { result } = renderHook(() => useMedia());
+        await act(async () => {
+          await result.current.upload(file());
+        });
+        expect(result.current.error).toBe('Error al subir imagen.');
+      });
+
+      it('falls back when response.data has no error field', async () => {
+        axiosInstance.post.mockRejectedValueOnce({
+          isAxiosError: true,
+          response: { data: { message: 'wrong shape' } },
+        });
+        const { result } = renderHook(() => useMedia());
+        await act(async () => {
+          await result.current.upload(file());
+        });
+        expect(result.current.error).toBe('Error al subir imagen.');
+      });
+
+      it('falls back when response.data.error is an empty string', async () => {
+        axiosInstance.post.mockRejectedValueOnce({
+          isAxiosError: true,
+          response: { data: { error: '' } },
+        });
+        const { result } = renderHook(() => useMedia());
+        await act(async () => {
+          await result.current.upload(file());
+        });
+        expect(result.current.error).toBe('Error al subir imagen.');
+      });
+
+      it('falls back when error is not an AxiosError at all', async () => {
+        axiosInstance.post.mockRejectedValueOnce(new Error('random'));
+        const { result } = renderHook(() => useMedia());
+        await act(async () => {
+          await result.current.upload(file());
+        });
+        expect(result.current.error).toBe('Error al subir imagen.');
+      });
     });
   });
 

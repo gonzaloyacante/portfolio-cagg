@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { createAuthClient, twoFactorClient } = vi.hoisted(() => ({
@@ -83,5 +84,85 @@ describe('auth-client.ts (client config)', () => {
     process.env.NEXT_PUBLIC_APP_URL = 'https://cagg.vercel.app';
     await import('@/lib/auth-client');
     expect(createAuthClient).toHaveBeenCalledTimes(1);
+  });
+
+  describe('onTwoFactorRedirect callback', () => {
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      // jsdom makes window.location read-only by default; use a stub
+      // so we can assert the handler writes the expected URL.
+      delete (window as { location?: unknown }).location;
+      (window as unknown as { location: { href: string } }).location = { href: '' };
+    });
+
+    afterEach(() => {
+      (window as unknown as { location: Location }).location = originalLocation;
+    });
+
+    it('redirects window.location.href to /admin/login?step=2fa when invoked', async () => {
+      process.env.NEXT_PUBLIC_APP_URL = 'https://cagg.vercel.app';
+      await import('@/lib/auth-client');
+      const call = (
+        twoFactorClient as unknown as {
+          mock: { calls: unknown[][] };
+        }
+      ).mock.calls[0];
+      const opts = call?.[0] as { onTwoFactorRedirect: () => void };
+
+      opts.onTwoFactorRedirect();
+
+      expect(window.location.href).toBe('/admin/login?step=2fa');
+    });
+
+    it('ignores any arguments passed by better-auth and still redirects', async () => {
+      process.env.NEXT_PUBLIC_APP_URL = 'https://cagg.vercel.app';
+      await import('@/lib/auth-client');
+      const call = (
+        twoFactorClient as unknown as {
+          mock: { calls: unknown[][] };
+        }
+      ).mock.calls[0];
+      const opts = call?.[0] as {
+        onTwoFactorRedirect: (...args: unknown[]) => void;
+      };
+
+      // Some better-auth versions may pass ctx/url info — handler should
+      // not throw and should always redirect to the same path.
+      opts.onTwoFactorRedirect({ url: 'https://evil.example/2fa' });
+      opts.onTwoFactorRedirect(undefined, null, 'whatever');
+
+      expect(window.location.href).toBe('/admin/login?step=2fa');
+    });
+
+    it('captures a fresh handler on each module load (no stale closure)', async () => {
+      process.env.NEXT_PUBLIC_APP_URL = 'https://cagg.vercel.app';
+      await import('@/lib/auth-client');
+      const firstCall = (
+        twoFactorClient as unknown as {
+          mock: { calls: unknown[][] };
+        }
+      ).mock.calls[0];
+      const firstHandler = (firstCall?.[0] as { onTwoFactorRedirect: () => void })
+        .onTwoFactorRedirect;
+
+      vi.resetModules();
+      await import('@/lib/auth-client');
+      const secondCall = (
+        twoFactorClient as unknown as {
+          mock: { calls: unknown[][] };
+        }
+      ).mock.calls[1];
+      const secondHandler = (secondCall?.[0] as { onTwoFactorRedirect: () => void })
+        .onTwoFactorRedirect;
+
+      expect(firstHandler).not.toBe(secondHandler);
+      // Both handlers should still write the same target.
+      firstHandler();
+      expect(window.location.href).toBe('/admin/login?step=2fa');
+      window.location.href = '';
+      secondHandler();
+      expect(window.location.href).toBe('/admin/login?step=2fa');
+    });
   });
 });

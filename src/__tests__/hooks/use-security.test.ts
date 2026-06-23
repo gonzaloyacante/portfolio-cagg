@@ -69,6 +69,74 @@ describe('useSecurity()', () => {
       expect(result.current.submitVerify).toBeTypeOf('function');
       expect(result.current.submitDisable).toBeTypeOf('function');
     });
+
+    it('exposes acknowledgeBackupCodes', () => {
+      const { result } = renderHook(() => useSecurity(false));
+      expect(result.current.acknowledgeBackupCodes).toBeTypeOf('function');
+    });
+  });
+
+  describe('acknowledgeBackupCodes()', () => {
+    it('returns step to idle when called from a non-idle step', () => {
+      const { result, rerender } = renderHook(() => useSecurity(false));
+      act(() => {
+        result.current.startEnable();
+      });
+      rerender();
+      expect(result.current.step).toBe('enabling');
+
+      act(() => {
+        result.current.acknowledgeBackupCodes();
+      });
+      rerender();
+
+      expect(result.current.step).toBe('idle');
+    });
+
+    it('clears totpSetup when called from a non-idle step', () => {
+      const { result, rerender } = renderHook(() => useSecurity(false));
+      act(() => {
+        result.current.startEnable();
+      });
+      rerender();
+
+      act(() => {
+        result.current.acknowledgeBackupCodes();
+      });
+      rerender();
+
+      expect(result.current.totpSetup).toBeNull();
+    });
+
+    it('is safe to call when already idle (idempotent)', () => {
+      const { result, rerender } = renderHook(() => useSecurity(false));
+      expect(result.current.step).toBe('idle');
+      expect(result.current.totpSetup).toBeNull();
+
+      act(() => {
+        result.current.acknowledgeBackupCodes();
+      });
+      rerender();
+
+      expect(result.current.step).toBe('idle');
+      expect(result.current.totpSetup).toBeNull();
+    });
+
+    it('flips step back to idle when called from disabling', () => {
+      const { result, rerender } = renderHook(() => useSecurity(true));
+      act(() => {
+        result.current.startDisable();
+      });
+      rerender();
+      expect(result.current.step).toBe('disabling');
+
+      act(() => {
+        result.current.acknowledgeBackupCodes();
+      });
+      rerender();
+
+      expect(result.current.step).toBe('idle');
+    });
   });
 
   describe('startEnable()', () => {
