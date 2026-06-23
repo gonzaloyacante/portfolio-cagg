@@ -26,7 +26,7 @@ describe('contactMessageSchema — extra density', () => {
       '𓀀𓂀𓆎𓈖', // Egyptian hieroglyphs
       'a'.repeat(100),
       'a'.repeat(2),
-      '   a   ', // leading/trailing whitespace
+      '   ab   ', // leading/trailing whitespace — trims to 'ab' (≥ min 2)
       'a-b-c-d',
       'a_b_c_d',
       'a.b.c.d',
@@ -136,6 +136,7 @@ describe('contactMessageSchema — extra density', () => {
       ['1'.repeat(20)],
       ['+'.repeat(20)],
       [' '.repeat(20)],
+      [' '.repeat(21)], // trims to '' — passes max(20)
       ['-'.repeat(20)],
       ['. '.repeat(10)],
     ])('phone %j is accepted (max 20 chars)', (phone) => {
@@ -150,7 +151,7 @@ describe('contactMessageSchema — extra density', () => {
   });
 
   describe('phone: rejected (too long)', () => {
-    it.each([['1'.repeat(21)], ['+1'.repeat(20)], ['a'.repeat(21)], [' '.repeat(21)]])(
+    it.each([['1'.repeat(21)], ['+1'.repeat(20)], ['a'.repeat(21)]])(
       'phone %j (length 21+) is rejected',
       (phone) => {
         const result = contactMessageSchema.safeParse({

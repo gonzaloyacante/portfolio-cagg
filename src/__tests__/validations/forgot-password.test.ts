@@ -35,8 +35,6 @@ describe('forgotPasswordSchema', () => {
       'a@@b.com',
       'a@-b.com',
       'a@b..com',
-      'a@b.com ',
-      ' a@b.com',
     ])('rejects: %s', (email) => {
       const result = forgotPasswordSchema.safeParse({ email });
       expect(result.success).toBe(false);

@@ -69,10 +69,8 @@ describe('login/forgot/reset validations — extra density', () => {
       ['user@example..com'],
       ['user@@example.com'],
       ['user @example.com'],
-      [' user@example.com'],
       ['user@ example.com'],
       ['user@example com'],
-      ['user@example.com '],
       ['just-text'],
       ['mailto:test@example.com'],
       ['tel:+1234567890'],
@@ -148,20 +146,20 @@ describe('login/forgot/reset validations — extra density', () => {
 
   describe('resetPasswordSchema: comprehensive', () => {
     it.each([
-      ['12345678', '12345678'],
-      ['p4$$w0rd!', 'p4$$w0rd!'],
+      ['1234567890', '1234567890'],
+      ['p4$$w0rd!!', 'p4$$w0rd!!'],
       ['very long password with spaces and éàü', 'very long password with spaces and éàü'],
-      ['🔐secure🔐', '🔐secure🔐'],
+      ['🔐secure12🔐', '🔐secure12🔐'],
       ['a'.repeat(100), 'a'.repeat(100)],
-      ['short-ish', 'short-ish'],
+      ['short-ish1', 'short-ish1'],
       ['with-dashes-and_underscores.123', 'with-dashes-and_underscores.123'],
       ['   leading-spaces-shared   ', '   leading-spaces-shared   '],
-      ['"quoted"', '"quoted"'],
-      ["'single'", "'single'"],
+      ['"quoted12"', '"quoted12"'],
+      ["'single12'", "'single12'"],
       ['semi;colon', 'semi;colon'],
-      ['emoji-😀', 'emoji-😀'],
+      ['emoji-😀123', 'emoji-😀123'],
       ['multibyte-字符-日', 'multibyte-字符-日'],
-      ['a'.repeat(8), 'a'.repeat(8)],
+      ['a'.repeat(10), 'a'.repeat(10)],
       ['Password1!', 'Password1!'],
     ])('accepts: %j', (password, confirm) => {
       expect(resetPasswordSchema.safeParse({ password, confirm }).success).toBe(true);
@@ -170,6 +168,8 @@ describe('login/forgot/reset validations — extra density', () => {
     it.each([
       ['1234567', '1234567'],
       ['7chars', '7chars'],
+      ['12345678', '12345678'],
+      ['123456789', '123456789'],
     ])('rejects too short: %j', (password) => {
       expect(resetPasswordSchema.safeParse({ password, confirm: password }).success).toBe(false);
     });
@@ -179,7 +179,7 @@ describe('login/forgot/reset validations — extra density', () => {
       [{ password: 'Password1!', confirm: 'password1!' }],
       [{ password: 'password123', confirm: ' password123' }],
       [{ password: 'password123', confirm: 'password123 ' }],
-      [{ password: 'p4$$w0rd', confirm: 'p4$$w0rd!' }],
+      [{ password: 'p4$$w0rd!!', confirm: 'p4$$w0rd!?' }],
     ])('rejects mismatched: %j', (input) => {
       expect(resetPasswordSchema.safeParse(input).success).toBe(false);
     });

@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { z } from 'zod';
-
 import { withAdminAuth } from '@/lib/auth-guard';
 import { prisma } from '@/lib/prisma';
-
-const updateSchema = z.object({
-  notificationEmail: z.string().email().or(z.literal('')),
-  notificationsEnabled: z.boolean(),
-});
+import { emailSettingsFormSchema } from '@/validations/admin';
 
 const KEYS = ['notification_email', 'notifications_enabled'] as const;
 
@@ -23,7 +17,7 @@ export const GET = withAdminAuth(async () => {
 
 export const PUT = withAdminAuth(async (req) => {
   const body = await req.json().catch(() => null);
-  const parsed = updateSchema.safeParse(body);
+  const parsed = emailSettingsFormSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid data' }, { status: 422 });
   }
