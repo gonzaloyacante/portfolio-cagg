@@ -11,6 +11,7 @@ import { FAQ } from '@/components/landing/FAQ';
 import { Footer } from '@/components/landing/Footer';
 import { Header } from '@/components/landing/Header';
 import { Hero } from '@/components/landing/Hero';
+import { PageViewTracker } from '@/components/landing/PageViewTracker';
 import { Process } from '@/components/landing/Process';
 import { Projects } from '@/components/landing/Projects';
 import { Results } from '@/components/landing/Results';
@@ -22,12 +23,10 @@ import { Timeline } from '@/components/landing/Timeline';
 import type { SectionMeta } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 import {
-  breadcrumbJsonLd,
-  personJsonLd,
-  professionalServiceJsonLd,
-  projectsItemListJsonLd,
-  servicesItemListJsonLd,
-  websiteJsonLd,
+  landingJsonLdGraph,
+  resolveSeoMeta,
+  searchConsoleVerification,
+  seoMetadataFromConfig,
 } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -35,8 +34,34 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'meta' });
-  return { title: t('title'), description: t('description') };
+  const seo = await prisma.seoConfig.findUnique({ where: { slug: 'home' } });
+  const verification = searchConsoleVerification();
+  return {
+    ...seoMetadataFromConfig(seo, locale as 'es' | 'en', {
+      title: t('title'),
+      description: t('description'),
+    }),
+    ...(verification ? { verification } : {}),
+  };
 }
+
+/**
+ * Cache the SeoConfig + Hero.lastModified lookup so `generateMetadata`
+ * (which runs separately from the page render) and the page render
+ * itself share the same DB hit. The `landing` tag is invalidated by
+ * the admin save paths so content edits always refresh both.
+ */
+const getSeoContext = unstable_cache(
+  async () => {
+    const [seo, hero] = await Promise.all([
+      prisma.seoConfig.findUnique({ where: { slug: 'home' } }),
+      prisma.hero.findFirst({ select: { updatedAt: true } }),
+    ]);
+    return { seo, lastModified: hero?.updatedAt ?? new Date() };
+  },
+  ['landing-seo-context'],
+  { tags: ['landing'] }
+);
 
 function pickMeta(metas: SectionMeta[], slug: string, isEn: boolean) {
   const s = metas.find((m) => m.slug === slug);
@@ -214,94 +239,54 @@ export default async function LandingPage({ params }: Props) {
     a: isEn ? f.aEn : f.aEs,
   }));
 
-  // Build the JSON-LD payload for structured data. Six pieces:
-  // - Person: identifies the site owner across the web
-  // - ProfessionalService: wraps the Person as a service provider
-  //   (preferred by Google for freelancers/consultants)
-  // - WebSite: tells search engines this is a real site
-  // - ItemList (services): the list of services offered
-  // - ItemList (projects): the case studies / portfolio items
-  // - BreadcrumbList: the major sections of the page
-  // - FAQPage: the FAQ schema so the Q&A can show as rich results
-  const personLd = personJsonLd(locale as 'es' | 'en');
-  const serviceLd = professionalServiceJsonLd(locale as 'es' | 'en', contact);
-  const websiteLd = websiteJsonLd(locale as 'es' | 'en');
-  const servicesLd = servicesItemListJsonLd(locale as 'es' | 'en', serviceItems);
-  const projectsLd = projectsItemListJsonLd(
-    locale as 'es' | 'en',
-    projectItems.map((p) => ({ id: p.id, title: p.title, period: p.period, tag: p.tag }))
-  );
-  const breadcrumbLd = breadcrumbJsonLd(locale as 'es' | 'en', [
-    { name: isEn ? 'Home' : 'Inicio', path: '/' },
-    ...SECTION_SLUGS.map((s) => ({
-      name: s,
-      path: `/#${s}`,
+  // Single @graph JSON-LD payload. One <script>, all nodes cross-
+  // referenced by @id — Google's preferred format. Re-uses the same
+  // resolved title/description/ogImage that `generateMetadata` ships
+  // so the visible metadata and the structured data can't drift.
+  const tMeta = await getTranslations({ locale, namespace: 'meta' });
+  const { seo: seoForPage, lastModified } = await getSeoContext();
+  const resolved = resolveSeoMeta(seoForPage, locale as 'es' | 'en', {
+    title: tMeta('title'),
+    description: tMeta('description'),
+  });
+  const jsonLd = landingJsonLdGraph({
+    locale: locale as 'es' | 'en',
+    contact,
+    services: serviceItems,
+    projects: projectItems.map((p) => ({
+      id: p.id,
+      title: p.title,
+      period: p.period,
+      tag: p.tag,
     })),
-  ]);
-  const faqLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqEntries.map((f) => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: f.a,
-      },
-    })),
-  };
-  const jsonLd = [personLd, serviceLd, websiteLd, servicesLd, projectsLd, breadcrumbLd, faqLd];
+    faqs: faqEntries,
+    breadcrumbs: [
+      { name: isEn ? 'Home' : 'Inicio', path: '/' },
+      ...SECTION_SLUGS.map((s) => ({ name: s, path: `/#${s}` })),
+    ],
+    webPage: {
+      title: resolved.title,
+      description: resolved.description,
+      ogImage: resolved.ogImage,
+      lastModified,
+    },
+  });
 
   return (
     <>
       {/*
-        JSON-LD payload. Each Script tag is a single @graph item. All
-        seven ship with strategy="beforeInteractive" so they're parsed
-        by the time the head is ready (helps Google's renderer).
+        JSON-LD payload. Single @graph with all nine nodes cross-
+        referenced by @id. beforeInteractive so the head is parsed by
+        the time Google's renderer asks for it.
       */}
       <Script
-        id="ld-person"
+        id="ld-graph"
         type="application/ld+json"
         strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[0]) }}
-      />
-      <Script
-        id="ld-service"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[1]) }}
-      />
-      <Script
-        id="ld-website"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[2]) }}
-      />
-      <Script
-        id="ld-services"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[3]) }}
-      />
-      <Script
-        id="ld-projects"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[4]) }}
-      />
-      <Script
-        id="ld-breadcrumb"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[5]) }}
-      />
-      <Script
-        id="ld-faq"
-        type="application/ld+json"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[6]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
+      <PageViewTracker locale={locale} />
       <SectionIndex />
       <main id="main-content">
         {hero && contact && (

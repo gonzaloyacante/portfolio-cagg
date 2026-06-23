@@ -264,3 +264,36 @@ model Setting {
   value     String   @db.Text
   updatedAt DateTime @updatedAt
 }
+
+// === Analytics ===
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  locale    String   @default("es")
+  referrer  String?  @db.Text
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@map("page_views")
+}
+
+model CspReport {
+  id                String   @id @default(cuid())
+  documentUri       String?  @db.Text
+  violatedDirective String?  @db.Text
+  effectiveDirective String? @db.Text
+  blockedUri        String?  @db.Text
+  sourceFile        String?  @db.Text
+  lineNumber        Int?
+  columnNumber      Int?
+  originalPolicy    String?  @db.Text
+  userAgent         String?  @db.Text
+  createdAt         DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([violatedDirective])
+  @@map("csp_reports")
+}

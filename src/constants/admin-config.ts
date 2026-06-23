@@ -23,6 +23,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: '/admin/media', label: 'Imágenes', group: 'Contenido' },
 
   { href: '/admin/email-settings', label: 'Notificaciones', group: 'Sistema' },
+  { href: '/admin/analytics', label: 'Analytics', group: 'Sistema' },
   { href: '/admin/system', label: 'Sitio', group: 'Sistema' },
   { href: '/admin/security', label: 'Seguridad (2FA)', group: 'Sistema' },
 ];

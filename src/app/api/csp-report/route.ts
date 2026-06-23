@@ -1,50 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-/**
- * Receives CSP violation reports from browsers.
- *
- * Browsers send two formats:
- *  - Legacy: `Content-Type: application/csp-report` → `{ "csp-report": { ... } }`
- *  - Reporting API: `Content-Type: application/reports+json` → `[{ "type": "csp-violation", "body": { ... } }]`
- *
- * We accept both, normalize them, and log the violation. No PII storage, no
- * third-party forwarding — just enough to know if the policy is breaking
- * something real in production.
- */
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  let body: unknown;
-  try {
-    const contentType = request.headers.get('content-type') ?? '';
-    if (contentType.includes('application/reports+json')) {
-      body = await request.json();
-    } else {
-      // Legacy csp-report format
-      body = await request.json();
-    }
-  } catch {
-    return new NextResponse('Invalid report body', { status: 400 });
-  }
-
-  const report = normalizeReport(body);
-
-  if (report) {
-    // Log structured so Vercel/Log drain can pick it up.
-    console.error('[csp-violation]', JSON.stringify(report));
-  }
-
-  // Always 204 — we don't want failed reporting to spam retries.
-  return new NextResponse(null, { status: 204 });
-}
-
-// Some browsers/health checks may GET; respond with 405.
-export function GET(): NextResponse {
-  return new NextResponse('Method Not Allowed', {
-    status: 405,
-    headers: { Allow: 'POST' },
-  });
-}
-
-type NormalizedReport = {
+function normalizeReport(body: unknown): {
   documentUri?: string;
   violatedDirective?: string;
   effectiveDirective?: string;
@@ -53,13 +9,8 @@ type NormalizedReport = {
   lineNumber?: number;
   columnNumber?: number;
   originalPolicy?: string;
-  userAgent?: string;
-};
-
-function normalizeReport(body: unknown): NormalizedReport | null {
+} | null {
   if (!body) return null;
-
-  // Newer Reporting API: array of reports with `type` discriminator.
   if (Array.isArray(body)) {
     const violation = body.find(
       (r): r is { type: string; body?: Record<string, unknown> } =>
@@ -68,23 +19,18 @@ function normalizeReport(body: unknown): NormalizedReport | null {
     if (violation?.body) return fromBody(violation.body);
     return null;
   }
-
-  // Object input — could be wrapped in csp-report or be a single report.
   if (typeof body !== 'object') return null;
   const obj = body as Record<string, unknown>;
-
   if ('csp-report' in obj && obj['csp-report'] && typeof obj['csp-report'] === 'object') {
     return fromBody(obj['csp-report'] as Record<string, unknown>);
   }
-
   if ('type' in obj && obj.type === 'csp-violation' && obj.body && typeof obj.body === 'object') {
     return fromBody(obj.body as Record<string, unknown>);
   }
-
   return null;
 }
 
-function fromBody(b: Record<string, unknown>): NormalizedReport {
+function fromBody(b: Record<string, unknown>) {
   return {
     documentUri: stringOrUndefined(b['document-uri'] ?? b['documentURL']),
     violatedDirective: stringOrUndefined(b['violated-directive'] ?? b['effectiveDirective']),
@@ -103,4 +49,57 @@ function stringOrUndefined(v: unknown): string | undefined {
 
 function numberOrUndefined(v: unknown): number | undefined {
   return typeof v === 'number' ? v : undefined;
+}
+
+/**
+ * Receives CSP violation reports from browsers and persists them.
+ * Two formats supported: legacy `application/csp-report` and the
+ * new `application/reports+json`. Always 204 — failed reporting
+ * should not generate retries.
+ *
+ * The Prisma client is loaded lazily so unit tests can exercise the
+ * normalization logic without a database connection.
+ */
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return new NextResponse('Invalid report body', { status: 400 });
+  }
+
+  const report = normalizeReport(body);
+  if (report) {
+    const userAgent = request.headers.get('user-agent') ?? null;
+    console.error('[csp-violation]', JSON.stringify(report));
+    // Best-effort persistence. Skip silently if Prisma isn't reachable
+    // (e.g. in tests or during build).
+    try {
+      const { prisma } = await import('@/lib/prisma');
+      await prisma.cspReport.create({
+        data: {
+          documentUri: report.documentUri ?? null,
+          violatedDirective: report.violatedDirective ?? null,
+          effectiveDirective: report.effectiveDirective ?? null,
+          blockedUri: report.blockedUri ?? null,
+          sourceFile: report.sourceFile ?? null,
+          lineNumber: report.lineNumber ?? null,
+          columnNumber: report.columnNumber ?? null,
+          originalPolicy: report.originalPolicy ?? null,
+          userAgent: userAgent?.slice(0, 512) ?? null,
+        },
+      });
+    } catch {
+      // best-effort
+    }
+  }
+
+  return new NextResponse(null, { status: 204 });
+}
+
+export function GET(): NextResponse {
+  return new NextResponse('Method Not Allowed', {
+    status: 405,
+    headers: { Allow: 'POST' },
+  });
 }

@@ -36,16 +36,30 @@ export default async function LocaleLayout({
     <html lang={locale} className="h-full" data-scroll-behavior="smooth">
       <head>
         {/*
-          Performance: preconnect to Cloudinary so image requests start
-          before the browser even parses the <img> tag. Also enables HTTP/3
-          hints for Google Analytics when present.
+          Performance: preconnect so TLS handshakes start before the
+          browser even parses the <img> / <script> tags that need
+          those origins. dns-prefetch is the no-TLS fallback for
+          browsers that ignore preconnect.
         */}
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         {/* Google Fonts hosts — used by next/font with display:swap. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/*
+          Identity links. `<link rel="author">` and
+          `<link rel="publisher">` let search engines verify the
+          entity behind the site; `rel="me"` on the LinkedIn URL
+          also enables IndieAuth / Mastodon-style verification.
+        */}
+        <link rel="author" href="https://www.linkedin.com/in/carlos-guerra" />
+        <link rel="me" href="https://www.linkedin.com/in/carlos-guerra" />
+        <link rel="publisher" href="/" />
+
         {/*
           Icon chain. Modern browsers prefer the SVG (sharp on hi-DPI,
           scales to any size). Safari pinned-tab uses a monochrome SVG
@@ -65,6 +79,12 @@ export default async function LocaleLayout({
         {/* Microsoft tile color for Edge / IE pinned sites. */}
         <meta name="msapplication-TileColor" content="#0a0a0a" />
         <meta name="msapplication-tap-highlight" content="no" />
+        {/*
+          Theme color for the browser chrome. Dark follows the
+          site's dark-by-default palette; light is a warm off-white
+          so the address bar matches the page on user-light systems.
+        */}
+        <meta name="theme-color" content="#f5f5f4" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
 
         {/*
@@ -73,6 +93,11 @@ export default async function LocaleLayout({
           landing (and the contact section is already styled).
         */}
         <meta name="format-detection" content="telephone=no, email=no, address=no" />
+
+        {/* Entity attribution. */}
+        <meta name="author" content="Carlos Armando Guerra" />
+        <meta name="copyright" content="© Carlos Armando Guerra" />
+        <meta name="designer" content="Carlos Armando Guerra" />
 
         {/* Misc. */}
         <meta name="rating" content="general" />
