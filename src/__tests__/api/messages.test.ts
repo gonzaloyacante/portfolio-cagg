@@ -2,16 +2,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { POST } from '@/app/api/messages/route';
 
-const { prisma, getResend, rateLimit, headers, revalidateLanding } = vi.hoisted(() => ({
-  prisma: {
-    contactMessage: { create: vi.fn() },
-    setting: { findMany: vi.fn() },
-  },
-  getResend: vi.fn(),
-  rateLimit: vi.fn(),
-  headers: vi.fn(),
-  revalidateLanding: vi.fn(),
-}));
+const { prisma, getResend, rateLimit, headers, revalidateLanding, schemaOverrides } = vi.hoisted(
+  () => ({
+    prisma: {
+      contactMessage: { create: vi.fn() },
+      setting: { findMany: vi.fn() },
+    },
+    getResend: vi.fn(),
+    rateLimit: vi.fn(),
+    headers: vi.fn(),
+    revalidateLanding: vi.fn(),
+    // Per-test override of what contactMessageSchema.safeParse() returns.
+    // Lets us drive the route's defensive honeypot branch even though the
+    // production schema rejects any non-empty `website` at validation time.
+    schemaOverrides: { parseResult: null as null | { success: true; data: unknown } },
+  })
+);
 
 vi.mock('@/lib/prisma', () => ({ prisma }));
 vi.mock('@/lib/resend', () => ({ getResend }));
@@ -21,6 +27,16 @@ vi.mock('@/lib/rate-limit', () => ({
 }));
 vi.mock('@/lib/revalidate', () => ({ revalidateLanding }));
 vi.mock('next/headers', () => ({ headers }));
+vi.mock('@/validations/message', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/validations/message')>();
+  return {
+    ...actual,
+    contactMessageSchema: {
+      safeParse: (body: unknown) =>
+        schemaOverrides.parseResult ?? actual.contactMessageSchema.safeParse(body),
+    },
+  };
+});
 
 const VALID_BODY = {
   name: 'Carlos Armando Guerra',
@@ -32,6 +48,7 @@ const VALID_BODY = {
 describe('/api/messages POST', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    schemaOverrides.parseResult = null;
     prisma.contactMessage.create.mockResolvedValue({ id: '1' });
     prisma.setting.findMany.mockResolvedValue([]);
     rateLimit.mockReturnValue({ ok: true, retryAfterMs: 0 });
@@ -134,6 +151,40 @@ describe('/api/messages POST', () => {
       const req = new Request('https://x.com/api/messages', {
         method: 'POST',
         body: JSON.stringify({ ...VALID_BODY, website: '' }),
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(prisma.contactMessage.create).toHaveBeenCalled();
+    });
+
+    // The route's inline honeypot check (`website !== undefined && !== ''`)
+    // is defensive: the schema rejects any non-empty website at parse time,
+    // so this branch is unreachable in normal flow. We force it by mocking
+    // the schema so the bot payload makes it through to the route guard.
+    it('returns success without persisting when a non-empty website bypasses the schema', async () => {
+      schemaOverrides.parseResult = {
+        success: true,
+        data: { ...VALID_BODY, website: 'http://spam.example.com' },
+      };
+      const req = new Request('https://x.com/api/messages', {
+        method: 'POST',
+        body: JSON.stringify({ ...VALID_BODY, website: 'http://spam.example.com' }),
+      });
+      const res = await POST(req);
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body).toEqual({ success: true });
+      expect(prisma.contactMessage.create).not.toHaveBeenCalled();
+    });
+
+    it('treats an undefined website the same as empty (not a bot)', async () => {
+      // No override — default schema behaviour. website key absent → undefined,
+      // branch `website !== undefined` is false, so the route proceeds to
+      // create the message.
+      const req = new Request('https://x.com/api/messages', {
+        method: 'POST',
+        body: JSON.stringify(VALID_BODY),
       });
       const res = await POST(req);
       expect(res.status).toBe(200);

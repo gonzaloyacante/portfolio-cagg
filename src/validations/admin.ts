@@ -153,7 +153,7 @@ export const contactInfoUpdateSchema = z.object({
   name: z.string().min(1).nullish(),
   phoneDisplay: z.string().nullish(),
   whatsappNumber: z.string().nullish(),
-  email: z.string().email().nullish(),
+  email: z.string().trim().toLowerCase().email().nullish(),
   linkedinUrl: z.string().url().or(z.literal('')).nullish(),
   linkedinHandle: z.string().nullish(),
   location: z.string().nullish(),
@@ -179,7 +179,7 @@ export const contactInfoFormSchema = z.object({
   name: z.string().min(1, 'Requerido'),
   phoneDisplay: z.string().min(1, 'Requerido'),
   whatsappNumber: z.string().min(1, 'Requerido'),
-  email: z.email('Email inválido'),
+  email: z.string().trim().toLowerCase().email('Email inválido'),
   linkedinUrl: z.url('URL inválida'),
   linkedinHandle: z.string().min(1, 'Requerido'),
   location: z.string().min(1, 'Requerido'),
@@ -197,7 +197,7 @@ export const sectionMetaFormSchema = z.object({
 export type SectionMetaFormValues = z.infer<typeof sectionMetaFormSchema>;
 
 export const emailSettingsFormSchema = z.object({
-  notificationEmail: z.union([z.email('Email inválido'), z.literal('')]),
+  notificationEmail: z.string().trim().toLowerCase().email('Email inválido').or(z.literal('')),
   notificationsEnabled: z.boolean(),
 });
 export type EmailSettingsFormValues = z.infer<typeof emailSettingsFormSchema>;

@@ -5,16 +5,27 @@ import { renderHook } from '@testing-library/react';
 
 import { useCollection } from '@/hooks/use-collection';
 
-const { axiosInstance, toast, routerRefresh } = vi.hoisted(() => ({
+const { axiosInstance, toast, routerRefresh, axiosModule } = vi.hoisted(() => ({
   axiosInstance: { post: vi.fn(), put: vi.fn(), delete: vi.fn() },
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
   routerRefresh: vi.fn(),
+  axiosModule: {
+    isAxiosError: vi.fn((e: unknown) => Boolean((e as { isAxiosError?: boolean })?.isAxiosError)),
+  },
 }));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: routerRefresh, replace: vi.fn(), push: vi.fn() }),
 }));
 
+vi.mock('axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('axios')>();
+  return {
+    ...actual,
+    isAxiosError: axiosModule.isAxiosError,
+    default: { ...actual.default, isAxiosError: axiosModule.isAxiosError },
+  };
+});
 vi.mock('@/lib/axios', () => ({ default: axiosInstance }));
 vi.mock('sonner', () => ({ toast }));
 
@@ -288,6 +299,72 @@ describe('useCollection()', () => {
       const { result } = renderHook(() => useCollection(slug));
       await result.current.reorder(['x']);
       expect(axiosInstance.put).toHaveBeenCalledWith(`/api/admin/reorder/${slug}`, { ids: ['x'] });
+    });
+  });
+
+  // These tests target the helper that extracts a server-side error message
+  // out of an Axios error response. Every branch of the typeof + length
+  // guards must be exercised so the fallback is only used when the server
+  // did not provide a usable `error` string.
+  describe('extractErrorMessage (via error toasts)', () => {
+    /** Build a fake AxiosError-shaped object that isAxiosError() will accept. */
+    const axiosError = (response: unknown) =>
+      ({ isAxiosError: true, response, message: 'axios-fail' }) as unknown;
+
+    it('uses response.data.error string when present (create path)', async () => {
+      axiosInstance.post.mockRejectedValueOnce(axiosError({ data: { error: 'Slug duplicado' } }));
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.create({ name: 'X' });
+      expect(toast.error).toHaveBeenCalledWith('Slug duplicado');
+    });
+
+    it('falls back when error string is empty (update path)', async () => {
+      axiosInstance.put.mockRejectedValueOnce(axiosError({ data: { error: '' } }));
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.update('b1', { name: 'X' });
+      expect(toast.error).toHaveBeenCalledWith('No se pudo guardar');
+    });
+
+    it('falls back when error is not a string (update path)', async () => {
+      axiosInstance.put.mockRejectedValueOnce(axiosError({ data: { error: { code: 'INVALID' } } }));
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.update('b1', { name: 'X' });
+      expect(toast.error).toHaveBeenCalledWith('No se pudo guardar');
+    });
+
+    it('falls back when response.data has no error field (remove path)', async () => {
+      axiosInstance.delete.mockRejectedValueOnce(
+        axiosError({ data: { message: 'Some other shape' } })
+      );
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.remove('b1');
+      expect(toast.error).toHaveBeenCalledWith('No se pudo eliminar');
+    });
+
+    it('falls back when response.data is missing entirely (network error, create path)', async () => {
+      // Some transport failures (no response at all) still come through
+      // isAxiosError() as true but carry no response object.
+      axiosInstance.post.mockRejectedValueOnce({ isAxiosError: true, message: 'Network Error' });
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.create({ name: 'X' });
+      expect(toast.error).toHaveBeenCalledWith('No se pudo crear');
+    });
+
+    it('falls back for non-AxiosError rejections (reorder path)', async () => {
+      // axiosModule.isAxiosError returns false for any plain value.
+      axiosInstance.put.mockRejectedValueOnce(new Error('boom'));
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.reorder(['a']);
+      expect(toast.error).toHaveBeenCalledWith('No se pudo reordenar');
+    });
+
+    it('uses the longest non-empty server error string verbatim', async () => {
+      axiosInstance.put.mockRejectedValueOnce(
+        axiosError({ data: { error: 'Detalle muy largo del fallo en el servidor' } })
+      );
+      const { result } = renderHook(() => useCollection('brands'));
+      await result.current.update('b1', { name: 'X' });
+      expect(toast.error).toHaveBeenCalledWith('Detalle muy largo del fallo en el servidor');
     });
   });
 });

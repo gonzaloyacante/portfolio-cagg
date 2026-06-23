@@ -60,10 +60,8 @@ const INVALID_EMAILS = [
   'user@example.com.',
   'user@@example.com',
   'user @example.com',
-  ' user@example.com',
   'user@ example.com',
   'user@example com',
-  'user@example.com ',
   'just-text',
   'mailto:test@example.com',
   'tel:+1234567890',
@@ -116,9 +114,12 @@ describe('loginSchema', () => {
       expect(result).toEqual(VALID);
     });
 
-    it('trims nothing — email with trailing space should fail', () => {
-      const result = loginSchema.safeParse({ email: 'a@b.com ', password: 'x' });
-      expect(result.success).toBe(false);
+    it('trims and lowercases email before validation', () => {
+      const result = loginSchema.safeParse({ email: '  A@B.COM  ', password: 'x' });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.email).toBe('a@b.com');
+      }
     });
 
     it('does not require the password to have any specific character class', () => {

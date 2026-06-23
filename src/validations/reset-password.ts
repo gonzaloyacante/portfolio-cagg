@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    password: z.string().min(10, 'Mínimo 10 caracteres'),
     confirm: z.string().min(1, 'Requerido'),
   })
   .refine((d) => d.password === d.confirm, {
