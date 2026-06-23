@@ -206,28 +206,3 @@ export const systemSettingsFormSchema = z.object({
   acceptingProjects: z.boolean(),
 });
 export type SystemSettingsFormValues = z.infer<typeof systemSettingsFormSchema>;
-
-export const seoConfigFormSchema = z.object({
-  titleEs: z.string().nullish(),
-  titleEn: z.string().nullish(),
-  descEs: z.string().nullish(),
-  descEn: z.string().nullish(),
-  ogImage: z.string().url('URL inválida').or(z.literal('')).nullish(),
-  noIndex: z.boolean(),
-});
-export type SeoConfigFormValues = z.infer<typeof seoConfigFormSchema>;
-
-export const seoConfigUpdateSchema = z.object({
-  titleEs: z.string().nullish(),
-  titleEn: z.string().nullish(),
-  descEs: z.string().nullish(),
-  descEn: z.string().nullish(),
-  ogImage: z
-    .string()
-    .url()
-    .or(z.literal(''))
-    .nullish()
-    .transform((v) => (v === '' ? null : v)),
-  noIndex: z.boolean().optional(),
-});
-export type SeoConfigUpdateValues = z.infer<typeof seoConfigUpdateSchema>;

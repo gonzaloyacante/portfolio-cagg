@@ -12,7 +12,6 @@ import {
   ChevronLeft,
   Command,
   FileText,
-  Globe,
   GraduationCap,
   HelpCircle,
   Image as ImageIcon,
@@ -58,7 +57,6 @@ const ICON_BY_HREF: Record<string, LucideIcon> = {
   '/admin/email-settings': Bell,
   '/admin/analytics': Activity,
   '/admin/system': Sliders,
-  '/admin/seo': Globe,
   '/admin/security': ShieldCheck,
 };
 
