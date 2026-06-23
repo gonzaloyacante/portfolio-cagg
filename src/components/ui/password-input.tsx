@@ -20,12 +20,12 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   function PasswordInput({ className, disabled, ...props }, ref) {
     const [visible, setVisible] = useState(false);
     return (
-      <div className={cn('relative', className)}>
+      <div className="relative">
         <Input
           ref={ref}
           type={visible ? 'text' : 'password'}
           disabled={disabled}
-          className="pr-10"
+          className={cn('pr-10', className)}
           {...props}
         />
         <button
