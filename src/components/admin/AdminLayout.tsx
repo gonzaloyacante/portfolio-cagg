@@ -375,7 +375,10 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
           </div>
         </header>
 
-        <main data-vt="admin-main" className="max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main
+          data-vt="admin-main"
+          className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+        >
           <div className="animate-[var(--animate-fade-up)]">{children}</div>
         </main>
       </div>
