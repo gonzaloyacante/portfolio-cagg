@@ -21,6 +21,7 @@ model User {
   sessions         Session[]
   accounts         Account[]
   twoFactor        TwoFactor?
+  pushSubs         PushSubscription[]
 }
 
 model Session {
@@ -213,6 +214,23 @@ model SectionMeta {
   descEn     String?  @db.Text
   extra      Json     @default("{}")
   updatedAt  DateTime @updatedAt
+}
+
+// === Push subscriptions (admin PWA — receives push on new contact messages) ===
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The Push Service endpoint (APNs for iOS, FCM-Chrome for Android).
+  // Unique per device — re-subscribing the same device overwrites the keys.
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // === Mensajes de contacto ===

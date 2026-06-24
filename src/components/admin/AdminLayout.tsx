@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 import { CommandPalette, openCommandPalette } from '@/components/admin/CommandPalette';
+import { NotificationsToggle } from '@/components/admin/NotificationsToggle';
 import { Toaster } from '@/components/ui/sonner';
 import { ADMIN_NAV, ADMIN_NAV_GROUPS } from '@/constants/admin-config';
 import { authClient } from '@/lib/auth-client';
@@ -101,6 +102,26 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
   const activeLabel = activeItem?.label ?? 'Panel';
 
   const handleSignOut = async () => {
+    // Best-effort: drop the push subscription on this device before signing
+    // out so the server stops sending notifications here. Errors are
+    // swallowed — signOut must still happen.
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await fetch('/api/push/subscribe', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+            credentials: 'same-origin',
+          });
+          await sub.unsubscribe();
+        }
+      } catch (e) {
+        console.error('[admin] failed to drop push subscription on signOut', e);
+      }
+    }
     await authClient.signOut();
     router.push('/admin/login');
   };
@@ -350,6 +371,7 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
             <span className="text-muted-foreground/60 hidden font-mono text-[10px] tracking-[0.18em] uppercase sm:inline">
               {now}
             </span>
+            <NotificationsToggle />
             <a
               href="/"
               target="_blank"
@@ -375,7 +397,10 @@ export default function AdminLayout({ children, userEmail }: AdminLayoutProps) {
           </div>
         </header>
 
-        <main data-vt="admin-main" className="max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main
+          data-vt="admin-main"
+          className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+        >
           <div className="animate-[var(--animate-fade-up)]">{children}</div>
         </main>
       </div>

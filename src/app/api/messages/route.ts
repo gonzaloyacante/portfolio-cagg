@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { escapeHtml } from '@/lib/escape-html';
 import { prisma } from '@/lib/prisma';
+import { dispatchPushToAllAdmins } from '@/lib/push';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { getResend } from '@/lib/resend';
 import { contactMessageSchema } from '@/validations/message';
@@ -77,6 +78,19 @@ export async function POST(req: Request) {
         return null;
       });
   }
+
+  // Push notification to any admin device that subscribed via the admin PWA.
+  // Mirrors the email notification: best-effort, never fails the request.
+  // Truncated body so the lock-screen preview stays readable; the admin taps
+  // the notification to open the full message in /admin/messages.
+  const preview = message.length > 140 ? `${message.slice(0, 137)}…` : message;
+  await dispatchPushToAllAdmins({
+    title: `Nuevo mensaje de ${name}`,
+    body: preview,
+    url: '/admin/messages',
+  }).catch((err: unknown) => {
+    console.error('[contact] push dispatch failed:', err);
+  });
 
   return NextResponse.json({ success: true });
 }
