@@ -12,7 +12,13 @@
     "saving": "Guardando…",
     "error": "Error al guardar.",
     "delete_confirm": "¿Eliminar este registro?",
-    "add": "Agregar"
+    "add": "Agregar",
+    "notifications": {
+      "enable": "Activar notificaciones",
+      "disable": "Notificaciones activas",
+      "blocked": "Bloqueadas en el navegador",
+      "loading": "Verificando soporte…"
+    }
   },
   "a11y": {
     "skip_to_content": "Ir al contenido principal",

@@ -12,7 +12,13 @@
     "saving": "Saving…",
     "error": "Error saving.",
     "delete_confirm": "Delete this record?",
-    "add": "Add"
+    "add": "Add",
+    "notifications": {
+      "enable": "Enable notifications",
+      "disable": "Notifications on",
+      "blocked": "Blocked in browser",
+      "loading": "Checking support…"
+    }
   },
   "a11y": {
     "skip_to_content": "Skip to main content",
